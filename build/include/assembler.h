@@ -1,4 +1,7 @@
+#define EXTEN_CMP 10
+#define MAX_LINE_LENGTH 1000
+
+
 int assemble(char *file);
 int checkExtension(char *file);
-
-#define EXTEN_CMP 10
+int createFile(char *file, char *buffer, size_t size);

@@ -1,6 +1,6 @@
 CC = gcc
 # CFLAGS += -g -O2 -Werror -Wall
-CFLAGS += -g -O2 
+CFLAGS += -g3 -O0
 
 INC = include
 LDFLAGS +=
