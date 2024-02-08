@@ -1,0 +1,155 @@
+Number of registers: 16
+Word Length: 32 bits / 4 bytes
+OPCODE Length: 4 bits/ 1 byte
+
+32 bit integers
+32 bit pointers
+
+
+⁡⁣⁢⁢𝗥𝗲𝗴𝗶𝘀𝘁𝗲𝗿𝘀 𝗡𝘂𝗺𝗯𝗲𝗿    | 𝗣𝘂𝗿𝗽𝗼𝘀𝗲⁡
+---------------------
+    0               | general
+    1               | general
+    2               | general
+    3               | general
+    5               | general
+    6               | general
+    7               | general
+    8(a0)           | arg 0
+    9(a1)           | arg 1
+    10(rt)          | return value
+    11(fp)          | frame pointer
+    12(sp)          | stack pointer
+    13(lo)          | low bits mult
+    14(hi)          | high bits mult
+    15(ip)          | instruction pointer
+
+⁡⁣⁢⁢Syscall Number      | Purpose⁡
+---------------------
+    0               | exit
+    1               | print
+   
+
+⁡⁢⁣⁢Instructions:⁡
+s - source register
+d - dtination register
+int - integer
+
+$s0 refers register 0
+$s0(1) refers register 0 + 1 byte
+
+⁡⁢⁣⁢
+Comparison Ops: ⁡
+Result stored in d - 1 is True
+-----------------------------------------
+
+s1 > s2   
+⁡⁣⁢⁣grt s1 s2 d  
+⁡|1| 1| 1| 1|
+
+s1 < s2
+⁡⁣⁢⁣lst s1 s2 d⁡
+|1| 1| 1| 1|
+
+s1 == s2
+⁡⁣⁢⁣equ s1 s2 d⁡
+|1| 1| 1| 1|
+
+
+⁡⁢⁣⁢Integer Ops:⁡
+Result stored in d 
+------------------------------------------
+
+s1 + int
+⁡⁣⁢⁣addi s1 d int⁡
+|1|  1| 1|empty 1|4
+
+s2 + s2 
+⁡⁣⁢⁣add s1 s2 d⁡
+|1| 1| 1| 1|
+
+s1*int Stores high bits in 16 and low bits in 15
+⁡⁣⁢⁣multi s1 int⁡
+|1|   1 |empty 2| 4 |
+
+
+s1*s2 Stores high bits in 16 and low bits in 15
+⁡⁣⁢⁣mult s1 s2
+⁡|1  |1 |1 |empty 1|
+
+s1 & s2
+⁡⁣⁢⁣and s1 s2 d⁡
+|1| 1 |1| 1|
+
+s1 | s2
+⁡⁣⁢⁣or s1 s2 d⁡
+|1| 1 |1| 1|
+
+s1 ^ s2
+⁡⁣⁢⁣xor s1 s2 d⁡
+|1| 1 |1| 1|
+
+~s1
+⁡⁣⁢⁣not s1⁡
+|1| 1 |empty 2|
+
+Shift s1 bits left, highermost bits discarded, lower bits replaced with 0
+⁡⁣⁢⁣sl s1⁡
+|1| 1 |empty 2|
+
+Shift s1 bits right, highermost bits replaced with 0, lower bits discarded
+⁡⁣⁢⁣sr s1⁡
+|1| 1 |empty 2|
+
+⁡⁢⁣⁢Memory Ops:⁡
+------------------------------------------
+
+Loads byte of data from memory at s1 to s2
+⁡⁣⁢⁣ldb s1 s2⁡
+|1| 1 |1| empty|
+
+Store lsb byte of s1 to memory at s2
+⁡⁣⁢⁣strb s1 s2⁡
+|1| 1 |1| empty|
+
+Loads word of data from memory at s1 to s2
+⁡⁣⁢⁣ldw s1 s2
+⁡|1| 1 |1| empty|
+
+Store word s1 to memory at s2
+⁡⁣⁢⁣strw s1 s2⁡
+|1| 1 |1| empty|
+
+Moves s1 data to s2
+⁡⁣⁢⁣mv s1 s2⁡
+|1| 1 |1| empty|
+
+Returns back to return address(stored below frame pointer)
+⁡⁣⁢⁣ret⁡
+|1| empty 3|
+
+Do nothing
+⁡⁣⁢⁣nop⁡
+|4|
+
+⁡⁢⁣⁢Branching Ops:⁡
+------------------------------------------
+
+Moves instruction pointer to label if s1 > 0
+⁡⁣⁢⁣jmp s1 label⁡
+|1| 1 |2|
+
+
+Moves instruction pointer to label
+⁡⁣⁢⁣call label⁡
+|1|  2    | empty 1
+
+Performs syscall based on syscall number #NOTE 16 byte unsigned
+⁡⁣⁢⁣syscall int⁡
+|1| 2| empty
+
+
+
+⁡⁢⁣⁢.data⁡ indicates string that should be stored in the stack
+Each instruction is indicated by a new line
+space separated between key words

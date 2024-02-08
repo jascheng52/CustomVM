@@ -2,7 +2,11 @@ CC = gcc
 # CFLAGS += -g -O2 -Werror -Wall
 CFLAGS += -g3 -O0
 
-INC = include
+# INC = include 
+# INC2 = ../arch
+INC= include ../arch/include ../dataStruct/include
+INC_PARAMS=$(foreach d, $(INC), -I$d)
+
 LDFLAGS +=
 
 OBJECTS = assembler.o
@@ -14,7 +18,7 @@ prog: $(OBJECTS)
 		$(CC) $(OBJECTS) -o prog
 
 %:%.c
-	$(CC) -I$(INC) $(CFLAGS) $(LDFLAGS) -o $@ $< 
+	$(CC) $(INC_PARAMS) $(CFLAGS) $(LDFLAGS) -o $@ $< 
 
 clean:
 	rm -f *.o
