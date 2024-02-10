@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
@@ -6,10 +5,13 @@
 #include <unistd.h>
 
 #include <assembler.h>
+#include <allocator.h>
 #include <opcode.h>
 #include <registers.h>
 #include <list.h>
 
+NODE *headData;
+NODE *headLabel;
 
 int main(int argc, char *argv[])
 {
@@ -20,8 +22,10 @@ int main(int argc, char *argv[])
     }
     char *currentFile;
     int res;
+    init();
     for(int i = 1; i < argc; i++)
     {
+        
         res = assemble(argv[i]);
         if(!res)
         {
@@ -141,18 +145,73 @@ int parseLine(char *lineBuffer, char *currLine, int *instrNum)
 
     char *tokenStart = skipWhite(currLine);
     char c = *tokenStart;
-
     //case for .varName, where use can define static data
     if(c == '.')
     {
-        char *old = tokenStart;
-        tokenStart = skipWhite(currLine);
-        if(*tokenStart == '\n')
+        //Getting data variable name
+        char *cursor = tokenStart + 1;
+        if(*cursor == '\n' || *cursor == ' ' || *cursor == '\t')
         {
-            fprintf(stderr, ". indicated start of static variable no data after declaration\n");
-            return 0;
+            fprintf(stderr, ". indicated start of static variable no data name after declaration\n");
+            return -1;
         }
-        //TODO: finish pasing of static
+        while(*cursor != '\t' || *cursor != '\n')
+        {
+            if(*cursor == ' ')
+                break;
+            cursor++;
+        }
+
+        int dataNameLength = cursor - tokenStart;
+        if(*cursor == '\n')
+        {
+            fprintf(stderr, "No data assigned to data variable declared\n");
+            return -1;
+        }
+        cursor = skipWhite(cursor);
+        //Getting data values
+        char *dataEnd = NULL;
+        char *dataValStart = cursor;
+        if(*cursor == '"')
+        {
+            cursor++;
+            dataValStart = cursor;
+            int keepQuoteLoop = 1;
+            cursor++;
+            while(keepQuoteLoop)
+            {
+                if(*cursor == '\n')
+                {
+                    fprintf(stderr, "Left open quotes \n");
+                    return -1;
+                }
+                if(*cursor == '"')
+                {
+                    char *temp = cursor + 1;
+                    temp = skipWhite(temp);
+                    if(*temp == '\n')
+                        break;
+                    cursor = temp - 1;
+                }
+                cursor++;
+            }
+            
+            dataEnd = cursor;
+        }
+        else
+        {
+            while(*cursor != '\n')
+                cursor++;
+            dataEnd = cursor;
+        }
+        int dataValLength = dataEnd - dataValStart ;
+        
+        DATA_STRUCT *newData = mallocData(dataNameLength,dataValLength);
+        memcpy(newData->data, tokenStart, dataNameLength);
+        memcpy(newData->data + dataNameLength, dataValStart, dataValLength);
+        // debug(newData->data,dataNameLength+dataValLength);
+
+        return 1;
     }
 
     return 1;
@@ -177,7 +236,7 @@ int createFile(char *file, char *buffer, size_t size)
     return 1;
 }
 
-
+//Skips white space not include \n
 char *skipWhite(char *textLine)
 {
     char *cursor = textLine;
@@ -186,4 +245,36 @@ char *skipWhite(char *textLine)
         cursor++;
     }
     return cursor;
+}
+
+
+//Creates Lists/other init data
+void init()
+{
+    if((headData = malloc(sizeof(NODE))) == NULL)
+        {
+            fprintf(stderr, "Failed to malloc space\n");
+            exit(EXIT_FAILURE);
+        }
+        headData->next = headData;
+        headData->prev = headData;
+        headData->type = NONE;
+
+        if((headLabel = malloc(sizeof(NODE))) == NULL)
+        {
+            fprintf(stderr, "Failed to malloc space\n");
+            exit(EXIT_FAILURE);
+        }
+        headLabel->next = headData;
+        headLabel->prev = headData;
+        headLabel->type = NONE;
+
+}
+
+void debug(void *buffer, size_t num)
+{
+        char temp[num +1];
+        memcpy(temp,buffer,num);
+        temp[num] = '\0';
+        printf("%p:%s\n",temp,temp);
 }

@@ -9,18 +9,19 @@ INC_PARAMS=$(foreach d, $(INC), -I$d)
 
 LDFLAGS +=
 
-OBJECTS = assembler.o
+OBJECTS = assembler.o allocator.o
 
 
-all: assembler
+all: assembler 
 
-prog: $(OBJECTS)
-		$(CC) $(OBJECTS) -o prog
+assembler: $(OBJECTS)
+		$(CC) $(INC_PARAMS) $(OBJECTS) -o assembler
 
-%:%.c
-	$(CC) $(INC_PARAMS) $(CFLAGS) $(LDFLAGS) -o $@ $< 
+%.o:%.c
+	$(CC) $(INC_PARAMS) $(CFLAGS) $(LDFLAGS) -c $< -o $@ 
 
 clean:
 	rm -f *.o
+	rm -f assembler
 
 .PHONY: all clean
