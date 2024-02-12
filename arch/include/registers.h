@@ -1,3 +1,6 @@
+#ifndef REG_H
+#define REG_H
+
 typedef enum{
     ZERO,
     ONE,
@@ -16,3 +19,5 @@ typedef enum{
     HI,
     IP
 }REGS;
+
+#endif /*REG_H*/

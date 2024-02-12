@@ -1,6 +1,13 @@
 #include <stdlib.h>
 //the name/size for data. Then name is stored in data null terminated a
 //and then following is the rest of the data
+#ifndef ALLO_H
+#define ALLO_H
+
+#ifndef LIST_H
+#include <list.h>
+#endif /*LIST.H*/
+
 typedef struct data{
     size_t dataNameSize;
     size_t dataSize;
@@ -13,5 +20,14 @@ typedef struct label{
 }LABEL_STRUCT;
 
 
-DATA_STRUCT *mallocData(int dataNameSize, int dataSize);
-size_t dataStructSize(DATA_STRUCT *dataStruct);
+DATA_STRUCT *ALLO_mallocData(int dataNameSize, int dataSize);
+size_t ALLO_dataStructSize(DATA_STRUCT *dataStruct);
+LABEL_STRUCT *ALLO_mallocLabel(size_t labelSize);
+size_t ALLO_labelStructSize(LABEL_STRUCT *labelStruct);
+int ALLO_checkDataRep(NODE* listHead, char *dataName, size_t dataLength);
+
+
+#endif /*ALLO.H*/
+
+
+

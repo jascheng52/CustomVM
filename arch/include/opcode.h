@@ -1,3 +1,6 @@
+#ifndef OP_H
+#define OP_H
+
 typedef enum{
     ADDI,
     ADD,
@@ -25,4 +28,6 @@ typedef struct instruction
 {
     char op[2]; 
 }INSTR;
+
+#endif /*OP_H*/
 

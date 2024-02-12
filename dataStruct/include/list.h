@@ -1,22 +1,27 @@
-
+#ifndef LIST_H
+#define LIST_H
 //None is sentinel
 typedef enum node_type{
     NONE,
-    TOKEN,
+    DATA,
     LABEL
 }NODE_TYPE;
 
-
+//data depends on type
 typedef struct listNode
 {
     struct listNode *prev;
     struct listNode *next;
     NODE_TYPE type;
-    char data[];
+    void *data;
 }NODE;
 
-NODE *add_node(NODE *head, NODE *newNode);
-int freeList(NODE *head);
+NODE *LIST_add_node(NODE *head, NODE *newNode);
+int LIST_free_list(NODE *head);
+void LIST_print(NODE *head);
+
+
+#endif /*LIST.H*/
 
 
 

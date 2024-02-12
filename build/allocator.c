@@ -1,34 +1,62 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <string.h>
+
 #include <allocator.h>
+#include <list.h>
 
 //Mallocs a data struct and fills size fields.NOT DATA. Callers responsible to free. Null of fail
-DATA_STRUCT *mallocData(int dataNameSize, int dataSize)
+DATA_STRUCT *ALLO_mallocData(int dataNameSize, int dataSize)
 {
-    DATA_STRUCT *newData = malloc(sizeof(DATA_STRUCT) + sizeof(char)*(dataNameSize + dataSize));
+    DATA_STRUCT *newData = malloc(sizeof(DATA_STRUCT) + (dataNameSize + dataSize));
     newData->dataNameSize = dataNameSize;
     newData->dataSize = dataSize;
     return newData;
 }
 
 //Returns size of datastuct by size
-size_t dataStructSize(DATA_STRUCT *dataStruct)
+size_t ALLO_dataStructSize(DATA_STRUCT *dataStruct)
 {
     if(dataStruct == NULL)
         return 0;
     return sizeof(DATA_STRUCT) + dataStruct->dataSize + dataStruct->dataNameSize;
+} 
+
+//Checks if data name is in list. Returns 1 on true
+int ALLO_checkDataRep(NODE* listHead, char *dataName, size_t dataLength)
+{
+    if(listHead == NULL || dataName == NULL || dataLength == 0)
+        return 0;
+    
+    NODE *cursor = listHead->next;
+    LIST_print(listHead);
+    while(cursor != listHead)
+    {
+        if(cursor == NULL)
+        {
+            fprintf(stderr,"Data List corrupted\n");
+            exit(EXIT_FAILURE);
+        }
+        DATA_STRUCT *data = (DATA_STRUCT *)(cursor->data);
+        char *stringData = (char *) data->data;
+        if(strncmp(dataName,data->data, dataLength) == 0)
+            return 1;
+        cursor = cursor->next;
+    }
+    return 0;
 }
 
+
 //Mallocs a label struct. Callers responsible to free. Null of fail
-LABEL_STRUCT *mallocLabel(size_t labelSize)
+LABEL_STRUCT *ALLO_mallocLabel(size_t labelSize)
 {
-    LABEL_STRUCT *newLabel = malloc(sizeof(LABEL_STRUCT) + sizeof(char)*(labelSize));
+    LABEL_STRUCT *newLabel = malloc(sizeof(LABEL_STRUCT) + labelSize);
     return newLabel;
 }
 
 //Returns size of datastuct by size
-size_t labelStructSize(LABEL_STRUCT *labelStruct)
+size_t ALLO_labelStructSize(LABEL_STRUCT *labelStruct)
 {
     if(labelStruct == NULL)
         return 0;

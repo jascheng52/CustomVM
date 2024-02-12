@@ -9,6 +9,7 @@
 #include <opcode.h>
 #include <registers.h>
 #include <list.h>
+#include <util.h>
 
 NODE *headData;
 NODE *headLabel;
@@ -73,14 +74,14 @@ int assemble(char *file)
         return -1;
     }
 
-    if(!parseFile(openFile,buffer))
+    if(parseFile(openFile,buffer) < 0)
     {
-        fprintf(stderr, "Error parsing file\n");
+        fprintf(stderr, "Error parsing: %s\n", file);
         free(buffer);
         return -1;
     }
 
-    if(!createFile(file, buffer, fileSize))
+    if(createFile(file, buffer, fileSize) < 0)
     {
         fprintf(stderr, "Failed to create new file\n");
         free(buffer);
@@ -88,35 +89,10 @@ int assemble(char *file)
     }
     free(buffer);
 
-    return 1;
+    return 1;  
 }
 
 
-int checkExtension(char *file)
-{
-    int length, index;
-    char c = '\0';
-    length = strlen(file);
-    index = length;
-
-    while(index > 0)
-    {
-        if(file[index] == '.')
-        {
-            c = file[index];
-            break;
-        }
-        index--;
-    }
-    if(c == '\0')
-        return -1;
-    if(length-index != 5)
-        return -1;
-    if(!strncmp(&file[index],".jasm", EXTEN_CMP))
-        return 1;
-
-    return -1;
-}
 
 //Returns 1 on sucess
 int parseFile(FILE *openFile,char *buffer)
@@ -124,12 +100,12 @@ int parseFile(FILE *openFile,char *buffer)
     char lineBuffer[MAX_LINE_LENGTH];
     memset(lineBuffer,0,MAX_LINE_LENGTH);
     char *currLine = fgets(lineBuffer,MAX_LINE_LENGTH,openFile);
-    int lineNumber = 0;
+    int lineNumber = 1;
     int instrNumb = 0;
 
     while (currLine != NULL)
     {
-        if(parseLine(lineBuffer, currLine,&instrNumb) == 0)
+        if(parseLine(lineBuffer, currLine,&instrNumb) == -1)
         {
             fprintf(stderr,"Error on line: %d\n", lineNumber);
             return -1;
@@ -155,14 +131,23 @@ int parseLine(char *lineBuffer, char *currLine, int *instrNum)
             fprintf(stderr, ". indicated start of static variable no data name after declaration\n");
             return -1;
         }
-        while(*cursor != '\t' || *cursor != '\n')
+        while(*cursor != '\n')
         {
-            if(*cursor == ' ')
+            if(*cursor == ' ' || *cursor == '\t')
                 break;
             cursor++;
         }
 
         int dataNameLength = cursor - tokenStart;
+        char dataName[dataNameLength + 1];
+        dataName[dataNameLength] = '\0';
+        memcpy(dataName,tokenStart,dataNameLength);
+        if(ALLO_checkDataRep(headData,dataName,dataNameLength))
+        {
+            fprintf(stderr,"Repeated data varaible name %s\n", dataName);
+            return -1;
+        }
+
         if(*cursor == '\n')
         {
             fprintf(stderr, "No data assigned to data variable declared\n");
@@ -206,13 +191,32 @@ int parseLine(char *lineBuffer, char *currLine, int *instrNum)
         }
         int dataValLength = dataEnd - dataValStart ;
         
-        DATA_STRUCT *newData = mallocData(dataNameLength,dataValLength);
+        DATA_STRUCT *newData = ALLO_mallocData(dataNameLength,dataValLength);
+        if(newData == NULL)
+        {
+            fprintf(stderr,"Failed to malloc new data\n");
+            exit(EXIT_FAILURE);
+        }
         memcpy(newData->data, tokenStart, dataNameLength);
         memcpy(newData->data + dataNameLength, dataValStart, dataValLength);
+        NODE *newNode = malloc(sizeof(NODE));
+        if(newNode == NULL)
+        {
+            fprintf(stderr,"Failed to malloc new list node\n");
+            exit(EXIT_FAILURE);
+        }
+        newNode->data = newData;
+        newNode->type = DATA;
+        if(LIST_add_node(headData,newNode) == NULL)
+        {
+            fprintf(stderr, "Failed to add data to list\n");
+            exit(EXIT_FAILURE);
+        }        
         // debug(newData->data,dataNameLength+dataValLength);
 
         return 1;
     }
+    
 
     return 1;
 }
@@ -234,17 +238,6 @@ int createFile(char *file, char *buffer, size_t size)
 
     fclose(newFile);
     return 1;
-}
-
-//Skips white space not include \n
-char *skipWhite(char *textLine)
-{
-    char *cursor = textLine;
-    while(*cursor == ' ' || *cursor == '\t' || *cursor == '\r')
-    {
-        cursor++;
-    }
-    return cursor;
 }
 
 
@@ -271,10 +264,3 @@ void init()
 
 }
 
-void debug(void *buffer, size_t num)
-{
-        char temp[num +1];
-        memcpy(temp,buffer,num);
-        temp[num] = '\0';
-        printf("%p:%s\n",temp,temp);
-}

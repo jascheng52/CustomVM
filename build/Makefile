@@ -9,13 +9,15 @@ INC_PARAMS=$(foreach d, $(INC), -I$d)
 
 LDFLAGS +=
 
-OBJECTS = assembler.o allocator.o
 
+LOC_OBJ = assembler.o allocator.o util.o
+EX_OBJ = ../dataStruct/list.o
+OBJECTS := $(LOC_OBJ) $(EX_OBJ)
 
 all: assembler 
 
 assembler: $(OBJECTS)
-		$(CC) $(INC_PARAMS) $(OBJECTS) -o assembler
+		$(CC) $(INC_PARAMS) $(CFLAGS) $(OBJECTS)  -o assembler
 
 %.o:%.c
 	$(CC) $(INC_PARAMS) $(CFLAGS) $(LDFLAGS) -c $< -o $@ 
