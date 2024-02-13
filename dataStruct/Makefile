@@ -15,7 +15,7 @@ prog: $(OBJECTS)
 		$(CC) $(OBJECTS) -o prog
 
 %:%.c
-	$(CC) -c $(INC_PARAMS) $(CFLAGS) $(LDFLAGS) -o $@ $< 
+	$(CC) $(INC_PARAMS) $(CFLAGS) $(LDFLAGS)  -c $<
 
 clean:
 	rm -f *.o

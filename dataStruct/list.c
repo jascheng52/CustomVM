@@ -31,6 +31,9 @@ int LIST_free_list(NODE *head)
     {
         NODE *current = nextNode;
         nextNode = nextNode->next;
+        void *data = current->data;
+        if(data != NULL)
+            free(data);
         free(current);
     }
     free(head);

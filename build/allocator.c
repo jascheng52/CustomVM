@@ -30,7 +30,7 @@ int ALLO_checkDataRep(NODE* listHead, char *dataName, size_t dataLength)
         return 0;
     
     NODE *cursor = listHead->next;
-    LIST_print(listHead);
+    // LIST_print(listHead);
     while(cursor != listHead)
     {
         if(cursor == NULL)
@@ -39,7 +39,6 @@ int ALLO_checkDataRep(NODE* listHead, char *dataName, size_t dataLength)
             exit(EXIT_FAILURE);
         }
         DATA_STRUCT *data = (DATA_STRUCT *)(cursor->data);
-        char *stringData = (char *) data->data;
         if(strncmp(dataName,data->data, dataLength) == 0)
             return 1;
         cursor = cursor->next;
@@ -52,6 +51,7 @@ int ALLO_checkDataRep(NODE* listHead, char *dataName, size_t dataLength)
 LABEL_STRUCT *ALLO_mallocLabel(size_t labelSize)
 {
     LABEL_STRUCT *newLabel = malloc(sizeof(LABEL_STRUCT) + labelSize);
+    newLabel->instRef = 0;
     return newLabel;
 }
 
@@ -63,6 +63,27 @@ size_t ALLO_labelStructSize(LABEL_STRUCT *labelStruct)
     return sizeof(LABEL_STRUCT) + labelStruct->labelSize;
 }
 
+
+int ALLO_checkLabelRep(NODE* listHead, char *labelName, size_t labelLength)
+{
+    if(listHead == NULL || labelName == NULL || labelLength == 0)
+        return 0;
+    NODE *cursor = listHead->next;
+    // LIST_print(listHead);
+    while(cursor != listHead)
+    {
+        if(cursor == NULL)
+        {
+            fprintf(stderr,"Label List corrupted\n");
+            exit(EXIT_FAILURE);
+        }
+        LABEL_STRUCT *data = (LABEL_STRUCT *)(cursor->data);
+        if(strncmp(labelName,data->label, labelLength) == 0)
+            return 1;
+        cursor = cursor->next;
+    }
+    return 0;
+}
 
 
 

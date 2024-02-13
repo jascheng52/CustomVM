@@ -8,6 +8,12 @@
 #include <list.h>
 #endif /*LIST.H*/
 
+//Only use lower 32 bits for instructions
+typedef struct inst{
+    void *code;
+}INSTR_STRUCT;
+
+
 typedef struct data{
     size_t dataNameSize;
     size_t dataSize;
@@ -15,7 +21,9 @@ typedef struct data{
 }DATA_STRUCT;
 
 typedef struct label{
+
     size_t labelSize;
+    INSTR_STRUCT *instRef;
     char   label[];
 }LABEL_STRUCT;
 
@@ -25,6 +33,7 @@ size_t ALLO_dataStructSize(DATA_STRUCT *dataStruct);
 LABEL_STRUCT *ALLO_mallocLabel(size_t labelSize);
 size_t ALLO_labelStructSize(LABEL_STRUCT *labelStruct);
 int ALLO_checkDataRep(NODE* listHead, char *dataName, size_t dataLength);
+int ALLO_checkLabelRep(NODE* listHead, char *labelName, size_t labelLength);
 
 
 #endif /*ALLO.H*/
