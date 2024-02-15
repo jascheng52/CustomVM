@@ -12,12 +12,33 @@ typedef enum{
     SEVEN,
     ARG0,
     ARG1,
-    RTN,
+    RT,
     FP,
     SP,
     LO,
     HI,
     IP
 }REGS;
+
+//String to enum mapping. NA is no match
+static const char *const VALID_REG[] = {
+    [ZERO] = "$s0",
+	[ONE] = "$s1",
+	[TWO] = "$s2",
+	[THREE] = "$s3",
+	[FOUR] = "$s4",
+    [FIVE] = "$s5",
+    [SIX] = "$s6",
+    [SEVEN] = "$s7",
+    [ARG0] = "$a0",
+    [ARG1] = "$a1",
+    [RT] = "$rt",
+    [FP] = "$fp",
+    [SP] = "$sp",
+    [LO] = "$lo",
+    [HI] = "$hi",
+    [IP] = "$ip",
+    [NA] = ""
+};
 
 #endif /*REG_H*/

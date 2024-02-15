@@ -1,6 +1,10 @@
 #ifndef OP_H
 #define OP_H
 
+#define NUM_INSTR 23
+#define NUM_REG 16
+//Enum of valid instructions, NA means none
+//When adding or removing instructions update the string array as well
 typedef enum{
     ADDI,
     ADD,
@@ -20,9 +24,42 @@ typedef enum{
     LDW,
     STRW,
     MV,
+    JMP,
+    CALL,
     RET,
-    NOP
+    SYSCALL,
+    NOP,
+    NA
 }OPS;
+
+//enum numval compare with string
+//NA should never be used for the most part
+static const char *const VALID_INS[] = {
+    [NA] = "",
+	[ADDI] = "addi",
+	[ADD] = "add",
+	[MULT_I] = "multi",
+	[MULT] = "mult",
+    [AND] = "and",
+    [OR] = "or",
+    [XOR] = "xor",
+    [NOT] = "not",
+    [SL] = "sl",
+    [SR] = "sr",
+    [GRT] = "grt",
+    [LST] = "lst",
+    [EQU] = "equ",
+    [LDB] = "ldb",
+    [STRB] = "strb",
+    [LDW] = "ldw",
+    [STRW] = "strw",
+    [MV] = "mv",
+    [JMP] = "jmp",
+    [CALL] = "call",
+    [RET] = "ret",
+    [SYSCALL] = "syscall",
+    [NOP] = "NOP"
+};
 
 typedef struct instruction
 {

@@ -20,25 +20,6 @@ NODE *LIST_add_node(NODE *head, NODE *newNode)
     return newNode; 
 }
 
-//Frees list from sentinel. Returns 1 on success. Should not use head again
-int LIST_free_list(NODE *head)
-{
-    if(head == NULL || head->type != NONE)
-        return -1;
-    
-    NODE *nextNode = head->next;
-    while (nextNode != head)
-    {
-        NODE *current = nextNode;
-        nextNode = nextNode->next;
-        void *data = current->data;
-        if(data != NULL)
-            free(data);
-        free(current);
-    }
-    free(head);
-    return 1;
-}
 
 //Prints pointer link
 void LIST_print(NODE *head)

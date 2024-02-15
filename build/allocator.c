@@ -6,7 +6,7 @@
 #include <allocator.h>
 #include <list.h>
 
-//Mallocs a data struct and fills size fields.NOT DATA. Callers responsible to free. Null of fail
+//Mallocs a data struct and fills size fields.NOT DATA. Callers responsible to free. Null if fail
 DATA_STRUCT *ALLO_mallocData(int dataNameSize, int dataSize)
 {
     DATA_STRUCT *newData = malloc(sizeof(DATA_STRUCT) + (dataNameSize + dataSize));
@@ -47,7 +47,7 @@ int ALLO_checkDataRep(NODE* listHead, char *dataName, size_t dataLength)
 }
 
 
-//Mallocs a label struct. Callers responsible to free. Null of fail
+//Mallocs a label struct. Callers responsible to free. Null if fail
 LABEL_STRUCT *ALLO_mallocLabel(size_t labelSize)
 {
     LABEL_STRUCT *newLabel = malloc(sizeof(LABEL_STRUCT) + labelSize);
@@ -85,6 +85,12 @@ int ALLO_checkLabelRep(NODE* listHead, char *labelName, size_t labelLength)
     return 0;
 }
 
-
+//Mallocs a instruction struct. Callers responsible to free. Null if fail
+INSTR_STRUCT *ALLO_mallocInstr()
+{
+    INSTR_STRUCT *newStruct = malloc(sizeof(INSTR_STRUCT));
+    newStruct->code = 0;
+    return newStruct;
+}
 
 
