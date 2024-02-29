@@ -4,7 +4,8 @@
 typedef enum node_type{
     NONE,
     DATA,
-    LABEL
+    LABEL,
+    INSTR
 }NODE_TYPE;
 
 //data depends on type

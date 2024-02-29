@@ -5,6 +5,7 @@
 
 #include <allocator.h>
 #include <list.h>
+#include <util.h>
 
 //Mallocs a data struct and fills size fields.NOT DATA. Callers responsible to free. Null if fail
 DATA_STRUCT *ALLO_mallocData(int dataNameSize, int dataSize)
@@ -12,6 +13,7 @@ DATA_STRUCT *ALLO_mallocData(int dataNameSize, int dataSize)
     DATA_STRUCT *newData = malloc(sizeof(DATA_STRUCT) + (dataNameSize + dataSize));
     newData->dataNameSize = dataNameSize;
     newData->dataSize = dataSize;
+    newData->isInt = 0;
     return newData;
 }
 
@@ -39,10 +41,13 @@ int ALLO_checkDataRep(NODE* listHead, char *dataName, size_t dataLength)
             exit(EXIT_FAILURE);
         }
         DATA_STRUCT *data = (DATA_STRUCT *)(cursor->data);
+        if(data->dataNameSize != dataLength)
+            return 0;
         if(strncmp(dataName,data->data, dataLength) == 0)
             return 1;
         cursor = cursor->next;
     }
+    
     return 0;
 }
 
@@ -86,10 +91,14 @@ int ALLO_checkLabelRep(NODE* listHead, char *labelName, size_t labelLength)
 }
 
 //Mallocs a instruction struct. Callers responsible to free. Null if fail
-INSTR_STRUCT *ALLO_mallocInstr()
+INSTR_STRUCT *ALLO_mallocInstr(OPS opType,size_t argLength)
 {
-    INSTR_STRUCT *newStruct = malloc(sizeof(INSTR_STRUCT));
-    newStruct->code = 0;
+    size_t numBits = wordAlign(argLength);
+    INSTR_STRUCT *newStruct = malloc(sizeof(INSTR_STRUCT) + numBits/WORD_LENGTH);
+    newStruct->opType = opType;
+    newStruct->argsSizeBits = numBits;
+    memset(newStruct->args,0,numBits/WORD_LENGTH);
+    
     return newStruct;
 }
 

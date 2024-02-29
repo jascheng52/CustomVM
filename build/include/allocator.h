@@ -4,19 +4,21 @@
 #ifndef ALLO_H
 #define ALLO_H
 
-#ifndef LIST_H
+
 #include <list.h>
-#endif /*LIST.H*/
+#include <opcode.h>
 
-
-//Only use lower 32 bits for instructions
+//Structure for instruction, note argsSize must be 32 bit word aligned
 typedef struct inst{
-    void *code;
+    OPS opType;
+    size_t argsSizeBits;
+    char args[];
 }INSTR_STRUCT;
 
 
 //Data name stored first then data
 typedef struct data{
+    int isInt;
     size_t dataNameSize;
     size_t dataSize;
     char   data[];
@@ -36,7 +38,7 @@ LABEL_STRUCT *ALLO_mallocLabel(size_t labelSize);
 size_t ALLO_labelStructSize(LABEL_STRUCT *labelStruct);
 int ALLO_checkDataRep(NODE* listHead, char *dataName, size_t dataLength);
 int ALLO_checkLabelRep(NODE* listHead, char *labelName, size_t labelLength);
-INSTR_STRUCT *ALLO_mallocInstr();
+INSTR_STRUCT *ALLO_mallocInstr(OPS opType, size_t argLength);
 
 
 #endif /*ALLO.H*/

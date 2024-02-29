@@ -10,7 +10,7 @@ INC_PARAMS=$(foreach d, $(INC), -I$d)
 LDFLAGS +=
 
 
-LOC_OBJ = assembler.o allocator.o util.o
+LOC_OBJ = assembler.o allocator.o util.o argumentParse.o
 EX_OBJ = ../dataStruct/list.o
 OBJECTS := $(LOC_OBJ) $(EX_OBJ)
 

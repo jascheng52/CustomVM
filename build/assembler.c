@@ -10,6 +10,7 @@
 #include <registers.h>
 #include <list.h>
 #include <util.h>
+#include <argumentParse.h>
 
 NODE *headData;
 NODE *headLabel;
@@ -20,6 +21,7 @@ int LABELFLAG = 0;
 
 int main(int argc, char *argv[])
 {
+    
     if(argc == 1)
     {
         fprintf(stderr, "Pass the .jasm as input");
@@ -221,9 +223,15 @@ int parseLine(char *lineBuffer, char *currLine, int *instrNum)
                     char *red = newData->data + newData->dataNameSize;
                     for(int i = 0; i< dataValLength; i++)
                     {
+                        if(*red == '-')
+                        {
+                            red++;
+                            continue;
+                        }
                         *red = *red - 48;
                         red++;
                     }
+                    newData->isInt = 1;
                 }
                 NODE *newNode = malloc(sizeof(NODE));
                 if(newNode == NULL)
@@ -290,7 +298,8 @@ int parseLine(char *lineBuffer, char *currLine, int *instrNum)
                 newNode->type = LABEL;
                 newNode->data = newLabel;
                 LABELFLAG = 1;
-                // debug(newLabel->label,labelNameLength);
+                debug(newLabel->label,labelNameLength);
+                break;
             }
             default:
             {
@@ -324,7 +333,7 @@ char *getInstruct(char *cursor, INSTR_STRUCT **parsedIns)
     }
     
     size_t parsedLength = cursor - start;
-    OPS op = NA;
+    OPS op = NA_OP;
     for(int i = 0; i < NUM_INSTR; i++)
     {
         size_t listLength = strnlen(VALID_INS[i], UPPER_INST_LENGTH);
@@ -343,7 +352,7 @@ char *getInstruct(char *cursor, INSTR_STRUCT **parsedIns)
         case ADDI:
         {
             
-            INSTR_STRUCT *newInstr = ALLO_mallocInstr(sizeof(INSTR_STRUCT));
+            INSTR_STRUCT *newInstr = ALLO_mallocInstr(ADDI,sizeof(INSTR_STRUCT) + 2*WORD_LENGTH);
             if(newInstr == NULL)
             {
                 fprintf(stderr, "Failed to malloc instruction");
@@ -355,9 +364,14 @@ char *getInstruct(char *cursor, INSTR_STRUCT **parsedIns)
                 fprintf(stderr, "Failed to malloc instruction");
                 return NULL;
             }
-            newNode->type = NONE;
+            newNode->type = INSTR;
             newNode->data = newInstr;
             LIST_add_node(headInstr,newNode);
+            char *argStart = start + parsedLength;
+            cursor = findArgs(ADDI, 3,cursor, newInstr->args,newInstr->argsSizeBits);
+
+
+            
             break;
         }
             break;

@@ -3,7 +3,7 @@
 #include <assembler.h>
 #include <registers.h>
 #include <list.h>
-#include <alloca.h>
+#include <allocator.h>
 
 //Skips white space not include \n
 char *skipWhite(char *textLine)
@@ -12,6 +12,21 @@ char *skipWhite(char *textLine)
     while(*cursor == ' ' || *cursor == '\t' || *cursor == '\r')
     {
         cursor++;
+    }
+    return cursor;
+}
+
+char *argAdvanceSkip(char *cursor)
+{
+    while(*cursor != '\n')
+    {
+        if(*cursor == ' ' || *cursor == '\t')
+            break;
+    }
+    if(*cursor == '\n')
+    {
+        fprintf(stderr, "Could not parse instruction\n");
+        return NULL;
     }
     return cursor;
 }
@@ -73,7 +88,7 @@ REGS mapsReg(char *regStr, size_t length)
                 return i;
         }
     }
-    return NUM_REG;
+    return NA_REG;
 }
 
 //Returns label struct in list that matches label. NULL none found
@@ -112,4 +127,11 @@ DATA_STRUCT *findData(NODE *head, char *dataStr, size_t length)
     }
     return NULL;
 
+}
+
+//aligns size to 32 bit
+size_t wordAlign(size_t size)
+{
+    size_t offset = size % WORD_LENGTH;
+    return size + WORD_LENGTH - offset;
 }
