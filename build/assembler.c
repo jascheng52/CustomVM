@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
     
     if(argc == 1)
     {
-        fprintf(stderr, "Pass the .jasm as input");
+        fprintf(stderr, "Pass the .jasm as input\n");
         return EXIT_FAILURE;
     }
     char *currentFile;
@@ -127,6 +127,7 @@ int parseLine(char *lineBuffer, char *currLine, int *instrNum)
 {
 
     char *cursor = skipWhite(currLine); 
+    fprintf(stdout, "Cursor position , %p\n", cursor);
     while(*cursor != '\n')
     {
         switch (*cursor)
@@ -303,13 +304,13 @@ int parseLine(char *lineBuffer, char *currLine, int *instrNum)
             }
             default:
             {
+                fprintf(stdout, "Cursor position , %p\n", cursor);
                 INSTR_STRUCT *parsedIns = NULL;
-                char *cursor = getInstruct(cursor, &parsedIns);
+                cursor = getInstruct(cursor, &parsedIns);
                 break;
             }
         }
         cursor = skipWhite(cursor);
-
 
     }
 
@@ -325,6 +326,7 @@ char *getInstruct(char *cursor, INSTR_STRUCT **parsedIns)
     {
         if(*cursor == ' ' || *cursor == '\t')
             break;
+        cursor++;
     }
     if(*cursor == '\n')
     {
@@ -352,7 +354,7 @@ char *getInstruct(char *cursor, INSTR_STRUCT **parsedIns)
         case ADDI:
         {
             
-            INSTR_STRUCT *newInstr = ALLO_mallocInstr(ADDI,sizeof(INSTR_STRUCT) + 2*WORD_LENGTH);
+            INSTR_STRUCT *newInstr = ALLO_mallocInstr(ADDI,sizeof(INSTR_STRUCT) + 6);
             if(newInstr == NULL)
             {
                 fprintf(stderr, "Failed to malloc instruction");
@@ -369,9 +371,16 @@ char *getInstruct(char *cursor, INSTR_STRUCT **parsedIns)
             LIST_add_node(headInstr,newNode);
             char *argStart = start + parsedLength;
             cursor = findArgs(ADDI, 3,cursor, newInstr->args,newInstr->argsSizeBits);
+            for(int i = 0; i < 3; i++)
+            {
+                unsigned char c = ((char *)(newInstr->args))[i];
+                fprintf(stderr,"%0.2x", c);
+                fflush(stderr);
+            }
+            fprintf(stderr,"\n");
 
-
-            
+            //Note sucessfully parsed addi args, need to handle \0 for all edge cases
+            return cursor;
             break;
         }
             break;

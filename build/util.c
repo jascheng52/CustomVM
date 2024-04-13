@@ -9,7 +9,7 @@
 char *skipWhite(char *textLine)
 {
     char *cursor = textLine;
-    while(*cursor == ' ' || *cursor == '\t' || *cursor == '\r')
+    while(*cursor == ' ' || *cursor == '\t' || *cursor == '\0')
     {
         cursor++;
     }
@@ -20,14 +20,11 @@ char *argAdvanceSkip(char *cursor)
 {
     while(*cursor != '\n')
     {
-        if(*cursor == ' ' || *cursor == '\t')
-            break;
+        if(*cursor == ' ' || *cursor == '\t' || *cursor == '\0')
+           break;
+        cursor++;
     }
-    if(*cursor == '\n')
-    {
-        fprintf(stderr, "Could not parse instruction\n");
-        return NULL;
-    }
+
     return cursor;
 }
 
@@ -84,6 +81,7 @@ REGS mapsReg(char *regStr, size_t length)
         size_t listLength = strnlen(VALID_REG[i], UPPER_INST_LENGTH);
         if(listLength == length)
         {
+            printf("parsed string: %.*s -- valid: %s\n", listLength,regStr, VALID_REG[i]);
             if(strncmp(VALID_REG[i], regStr, listLength) == 0)
                 return i;
         }
