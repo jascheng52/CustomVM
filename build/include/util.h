@@ -9,6 +9,7 @@ char *skipWhite(char *textLine);
 char *argAdvanceSkip(char *cursor);
 void debug(void *buffer, size_t num);
 int checkExtension(char *file);
+void printBytesFromBuffer(void *buffer, size_t numBytes);
 REGS mapsReg(char *regStr, size_t length);
 LABEL_STRUCT *findLabel(NODE *head, char *labelStr, size_t length);
 DATA_STRUCT *findData(NODE *head, char *dataStr, size_t length);

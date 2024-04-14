@@ -13,10 +13,7 @@ char  *findArgs(OPS opType, size_t expNum, char *cursor, char *buffer, size_t bu
     cursor = skipWhite(cursor);
     char *start = cursor;
     cursor = argAdvanceSkip(cursor);
-    if (cursor == NULL)
-        return NULL;
     
-
     size_t parsedLength = cursor - start;
     switch (opType)
     {
@@ -29,7 +26,7 @@ char  *findArgs(OPS opType, size_t expNum, char *cursor, char *buffer, size_t bu
             return NULL;
         }
         cursor = skipWhite(cursor);
-        if(*cursor == '\n')
+        if(*cursor == '\n' || *cursor == '\0')
         {
             fprintf(stderr, "Expected register as second argument\n");
             return NULL;
@@ -37,8 +34,6 @@ char  *findArgs(OPS opType, size_t expNum, char *cursor, char *buffer, size_t bu
 
         start = cursor;
         cursor = argAdvanceSkip(cursor);
-        if(cursor == NULL) 
-            return NULL;
         
         parsedLength = cursor - start;
         REGS arg2 = mapsReg(start,parsedLength);
@@ -48,15 +43,13 @@ char  *findArgs(OPS opType, size_t expNum, char *cursor, char *buffer, size_t bu
             return NULL;
         }
         cursor = skipWhite(cursor);
-        if(*cursor == '\n')
+        if(*cursor == '\n' || *cursor == '0')
         {
-            fprintf(stderr, "Expected register as second argument\n");
+            fprintf(stderr, "Expected register as third argument\n");
             return NULL;
         }
         start = cursor;
         cursor = argAdvanceSkip(cursor);
-        if(cursor == NULL) 
-            return NULL;
         parsedLength = cursor - start;
         int32_t intAdded = 0;
         int negScaler = 1;
@@ -95,12 +88,7 @@ char  *findArgs(OPS opType, size_t expNum, char *cursor, char *buffer, size_t bu
         memcpy(buffer,&argResults ,sizeof(unsigned short));
         memcpy(buffer + 2, &intAdded, 4);
 
-        for(int i = 0; i < 3; i++)
-        {
-            unsigned char c = ((char *)(buffer))[i];
-            fprintf(stderr,"%0.2x", c);
-            fflush(stderr);
-        }
+        
         fprintf(stderr,"\n");
         return cursor;
         break;

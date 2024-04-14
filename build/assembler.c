@@ -130,6 +130,8 @@ int parseLine(char *lineBuffer, char *currLine, int *instrNum)
     fprintf(stdout, "Cursor position , %p\n", cursor);
     while(*cursor != '\n')
     {
+        if(*cursor == '\0')
+            return 1;
         switch (*cursor)
         {
             case '.':
@@ -138,14 +140,14 @@ int parseLine(char *lineBuffer, char *currLine, int *instrNum)
                 //Getting data variable name
                 char *dataStart = cursor;
                 cursor++;
-                if(*cursor == '\n' || *cursor == ' ' || *cursor == '\t')
+                if(*cursor == '\n' || *cursor == ' ' || *cursor == '\t' || *cursor == '\0')
                 {
                     fprintf(stderr, ". indicated start of static variable no data name after declaration\n");
                     return -1;
                 }
                 while(*cursor != '\n')
                 {
-                    if(*cursor == ' ' || *cursor == '\t')
+                    if(*cursor == ' ' || *cursor == '\t' || *cursor == '\0')
                         break;
                     cursor++;
                 }
@@ -160,7 +162,7 @@ int parseLine(char *lineBuffer, char *currLine, int *instrNum)
                     return -1;
                 }
 
-                if(*cursor == '\n')
+                if(*cursor == '\n' || *cursor == '\0')
                 {
                     fprintf(stderr, "No data assigned to data variable declared\n");
                     return -1;
@@ -176,11 +178,10 @@ int parseLine(char *lineBuffer, char *currLine, int *instrNum)
                     NOQUOTESFLAG = 0;
                     cursor++;
                     dataValStart = cursor;
-                    int keepQuoteLoop = 1;
                     cursor++;
-                    while(keepQuoteLoop)
+                    while(1)
                     {
-                        if(*cursor == '\n')
+                        if(*cursor == '\n' || *cursor == '\0') 
                         {
                             fprintf(stderr, "Left open quotes \n");
                             return -1;
@@ -202,7 +203,7 @@ int parseLine(char *lineBuffer, char *currLine, int *instrNum)
                 {
                     while(*cursor != '\n')
                     {
-                        if(*cursor == ' ' || *cursor == '\t')
+                        if(*cursor == ' ' || *cursor == '\t' || *cursor == '\0')
                             break;
                         cursor++;
                     }
@@ -262,14 +263,14 @@ int parseLine(char *lineBuffer, char *currLine, int *instrNum)
                 //Case for label name
                 char *labelStart = cursor;
                 cursor++;
-                if(*cursor == '\n' || *cursor == ' ' || *cursor == '\t')
+                if(*cursor == '\n' || *cursor == ' ' || *cursor == '\t' || *cursor == '\0')
                 {
                     fprintf(stderr, "# indicated start of label no label name after declaration\n");
                     return -1;
                 }
                 while(*cursor != '\n')
                 {
-                    if(*cursor == ' ' || *cursor == '\t')
+                    if(*cursor == ' ' || *cursor == '\t' || *cursor == '\0')
                         break;
                     cursor++;
                 }
@@ -307,6 +308,8 @@ int parseLine(char *lineBuffer, char *currLine, int *instrNum)
                 fprintf(stdout, "Cursor position , %p\n", cursor);
                 INSTR_STRUCT *parsedIns = NULL;
                 cursor = getInstruct(cursor, &parsedIns);
+                if(cursor == NULL)
+                    return -1;
                 break;
             }
         }
@@ -324,11 +327,11 @@ char *getInstruct(char *cursor, INSTR_STRUCT **parsedIns)
     char *start = cursor;
     while(*cursor != '\n')
     {
-        if(*cursor == ' ' || *cursor == '\t')
+        if(*cursor == ' ' || *cursor == '\t' || *cursor == '\0')
             break;
         cursor++;
     }
-    if(*cursor == '\n')
+    if(*cursor == '\n' || *cursor == '\0')
     {
         fprintf(stderr, "Could not parse instruction\n");
         return NULL;
@@ -371,12 +374,9 @@ char *getInstruct(char *cursor, INSTR_STRUCT **parsedIns)
             LIST_add_node(headInstr,newNode);
             char *argStart = start + parsedLength;
             cursor = findArgs(ADDI, 3,cursor, newInstr->args,newInstr->argsSizeBits);
-            for(int i = 0; i < 3; i++)
-            {
-                unsigned char c = ((char *)(newInstr->args))[i];
-                fprintf(stderr,"%0.2x", c);
-                fflush(stderr);
-            }
+            if(cursor == NULL)
+                return NULL;
+
             fprintf(stderr,"\n");
 
             //Note sucessfully parsed addi args, need to handle \0 for all edge cases

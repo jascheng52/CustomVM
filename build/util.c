@@ -9,7 +9,7 @@
 char *skipWhite(char *textLine)
 {
     char *cursor = textLine;
-    while(*cursor == ' ' || *cursor == '\t' || *cursor == '\0')
+    while(*cursor == ' ' || *cursor == '\t')
     {
         cursor++;
     }
@@ -60,6 +60,17 @@ int checkExtension(char *file)
         return 1;
 
     return -1;
+}
+
+//Print numbytes from buffer as hex
+void printBytesFromBuffer(void *buffer, size_t numBytes)
+{
+    for(int i = 0; i < numBytes; i++)
+    {
+        unsigned char c = ((char *)(buffer))[i];
+        fprintf(stderr,"%0.2x", c);
+        fflush(stderr);
+    }
 }
 
 //Checks if str is all numbers. 1 if all numbers
