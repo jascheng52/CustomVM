@@ -373,13 +373,12 @@ char *getInstruct(char *cursor, INSTR_STRUCT **parsedIns)
             newNode->data = newInstr;
             LIST_add_node(headInstr,newNode);
             char *argStart = start + parsedLength;
-            cursor = findArgs(ADDI, 3,cursor, newInstr->args,newInstr->argsSizeBits);
+            cursor = findArgs(ADDI,cursor, newInstr->args,newInstr->argsSizeBits);
             if(cursor == NULL)
                 return NULL;
 
             fprintf(stderr,"\n");
 
-            //Note sucessfully parsed addi args, need to handle \0 for all edge cases
             return cursor;
             break;
         }
