@@ -1,11 +1,12 @@
 
 #include <opcode.h>
-
+#include <list.h>
 
 #ifndef ARG_PARSE
 #define ARG_PARSE
-#endif
 
-char  *findArgs(OPS opType, char *cursor, char *buffer, size_t bufferBitLength);
+char  *findArgs(OPS opType, char *cursor, char *buffer, NODE *labelList);
+
+#endif
 
 

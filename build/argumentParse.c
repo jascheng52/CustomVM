@@ -6,10 +6,10 @@
 #include <argumentParse.h>
 #include <opcode.h>
 #include <util.h>
-
+#include <list.h>
 
 //tries to parse the correct args. Returns char* on end of line, null on any error
-char  *findArgs(OPS opType, char *cursor, char *buffer, size_t bufferBitLength)
+char  *findArgs(OPS opType, char *cursor, char *buffer, NODE *labelList)
 {
     REG_ARG_TYPE expectedARG = REG_TYPE_MAP[opType];
 
@@ -73,10 +73,33 @@ char  *findArgs(OPS opType, char *cursor, char *buffer, size_t bufferBitLength)
             }
             
             unsigned short argResults = 0;
-            argResults = argResults || arg1;
+            argResults = argResults | arg1;
 
             //one byte register 
             memcpy(buffer,&argResults , 1);
+
+            return cursor;
+        }
+
+        case L:
+        {
+            cursor = skipWhite(cursor);
+            char *start = cursor;
+            cursor = argAdvanceSkip(cursor);
+            size_t parsedLength = cursor - start;
+            char labelName[parsedLength+1];
+            memcpy(labelName,start,parsedLength);
+            labelName[parsedLength] = '\0';
+            void *res = findLabel(labelList,labelName,parsedLength);
+            if(res == NULL)
+            {
+                fprintf(stderr,"Failed to find label %s declared", labelName);
+                return NULL;
+            }
+
+            //stores the POINTER of the label struct, dereference 
+            //to get label struct pointer
+            memcpy(buffer,&res , sizeof(res));
 
             return cursor;
         }
@@ -95,7 +118,7 @@ char  *findArgs(OPS opType, char *cursor, char *buffer, size_t bufferBitLength)
                 return NULL;
             }
             cursor = skipWhite(cursor);
-            if(*cursor == '\n' || *cursor == '\0')
+            if(*cursor == '\n' | *cursor == '\0')
             {
                 fprintf(stderr, "Expected number as second argument\n");
                 return NULL;
@@ -135,11 +158,11 @@ char  *findArgs(OPS opType, char *cursor, char *buffer, size_t bufferBitLength)
             }
             intAdded = intAdded * negScaler;
             unsigned short argResults = 0;
-            argResults = argResults || arg1;
+            argResults = argResults | arg1;
 
             //one byte register 4 for number
             memcpy(buffer,&argResults , 1);
-            memcpy(buffer + 2, &intAdded, 4);
+            memcpy(buffer + 1, &intAdded, 4);
 
             return cursor;
         }
@@ -174,21 +197,58 @@ char  *findArgs(OPS opType, char *cursor, char *buffer, size_t bufferBitLength)
                 fprintf(stderr, "Expected register as second argument\n");
                 return NULL;
             }
-            cursor = skipWhite(cursor);
-            if(*cursor == '\n' || *cursor == '0')
-            {
-                fprintf(stderr, "Expected number as third argument\n");
-                return NULL;
-            }
             
             unsigned int argResults = 0;
-            argResults = argResults || arg1;
+            argResults = argResults | arg1;
             argResults = argResults << 4;
-            argResults = argResults || arg2;
+            argResults = argResults | arg2;
             argResults = argResults << 4;
 
             //only 2 bytes needed to store registers
             memcpy(buffer,&argResults , 2);
+            return cursor;
+        }
+
+        case R_L:
+        {        
+            cursor = skipWhite(cursor);
+            char *start = cursor;
+            cursor = argAdvanceSkip(cursor);
+            size_t parsedLength = cursor - start;    
+
+            REGS arg1 = mapsReg(start,parsedLength);
+            if(arg1 == NA_REG)
+            {
+                fprintf(stderr, "Expected register as first argument\n");
+                return NULL;
+            }
+            cursor = skipWhite(cursor);
+            if(*cursor == '\n' || *cursor == '\0')
+            {
+                fprintf(stderr, "Expected register as second argument\n");
+                return NULL;
+            }
+
+            start = cursor;
+            cursor = argAdvanceSkip(cursor);
+            parsedLength = cursor - start;
+            char labelName[parsedLength+1];
+            memcpy(labelName,start,parsedLength);
+            labelName[parsedLength] = '\0';
+            void *res = findLabel(labelList,labelName,parsedLength);
+            if(res == NULL)
+            {
+                fprintf(stderr,"Failed to find label %s declared", labelName);
+                return NULL;
+            }
+            
+            unsigned int argResults = 0;
+            argResults = argResults | arg1;
+
+            //only 1 bytes needed to store registers
+            //address of label struct stored
+            memcpy(buffer,&argResults , 1);
+            memcpy(buffer + 1, &res, sizeof(res));
             return cursor;
         }
 
@@ -239,11 +299,11 @@ char  *findArgs(OPS opType, char *cursor, char *buffer, size_t bufferBitLength)
             }
             
             unsigned int argResults = 0;
-            argResults = argResults || arg1;
-            argResults = argResults << 4;
-            argResults = argResults || arg2;
-            argResults = argResults << 4;
-            argResults = argResults || arg3;
+            argResults = argResults | arg3;
+            argResults = argResults << 8;
+            argResults = argResults | arg2;
+            argResults = argResults << 8;
+            argResults = argResults | arg1;
 
             //only 3 bytes needed to store registers
             memcpy(buffer,&argResults ,3);
@@ -319,9 +379,9 @@ char  *findArgs(OPS opType, char *cursor, char *buffer, size_t bufferBitLength)
             }
             intAdded = intAdded * negScaler;
             unsigned short argResults = 0;
-            argResults = argResults || arg1;
-            argResults = argResults << 4;
-            argResults = argResults || arg2;
+            argResults = argResults | arg2;
+            argResults = argResults << 8;
+            argResults = argResults | arg1;
 
             //2 bytes register 4 for number
             memcpy(buffer,&argResults ,2);

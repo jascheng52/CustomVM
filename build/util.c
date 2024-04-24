@@ -62,7 +62,7 @@ int checkExtension(char *file)
     return -1;
 }
 
-//Print numbytes from buffer as hex
+//Print num bytes from buffer as hex
 void printBytesFromBuffer(void *buffer, size_t numBytes)
 {
     for(int i = 0; i < numBytes; i++)
@@ -92,7 +92,7 @@ REGS mapsReg(char *regStr, size_t length)
         size_t listLength = strnlen(VALID_REG[i], UPPER_INST_LENGTH);
         if(listLength == length)
         {
-            printf("parsed string: %.*s -- valid: %s\n", listLength,regStr, VALID_REG[i]);
+            // printf("parsed string: %.*s -- valid: %s\n", listLength,regStr, VALID_REG[i]);
             if(strncmp(VALID_REG[i], regStr, listLength) == 0)
                 return i;
         }
