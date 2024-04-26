@@ -6,10 +6,10 @@
 
 #include <assembler.h>
 #include <allocator.h>
-#include <opcode.h>
 #include <registers.h>
 #include <list.h>
 #include <util.h>
+#include <opcode.h>
 #include <argumentParse.h>
 
 NODE *headData;
@@ -125,7 +125,7 @@ int parseLine(char *lineBuffer, char *currLine, int *instrNum)
 {
 
     char *cursor = skipWhite(currLine);
-    fprintf(stdout, "Cursor position , %p\n", cursor);
+    // fprintf(stdout, "Cursor position , %p\n", cursor);
     while (*cursor != '\n')
     {
         if (*cursor == '\0')
@@ -283,6 +283,7 @@ int parseLine(char *lineBuffer, char *currLine, int *instrNum)
             }
 
             LABEL_STRUCT *newLabel = ALLO_mallocLabel(labelNameLength);
+            // fprintf(stderr,"New Label at %p\n", newLabel);
             if (newLabel == NULL)
             {
                 fprintf(stderr, "Failed to malloc new label");
@@ -298,12 +299,12 @@ int parseLine(char *lineBuffer, char *currLine, int *instrNum)
             newNode->type = LABEL;
             newNode->data = newLabel;
             LABELFLAG = 1;
-            debug(newLabel->label, labelNameLength);
+            //debug(newLabel->label, labelNameLength);
             break;
         }
         default:
         {
-            fprintf(stdout, "Cursor position , %p\n", cursor);
+            // fprintf(stdout, "Cursor position , %p\n", cursor);
             INSTR_STRUCT *parsedIns = NULL;
             cursor = getInstruct(cursor, &parsedIns);
             if (cursor == NULL)
@@ -327,11 +328,11 @@ char *getInstruct(char *cursor, INSTR_STRUCT **parsedIns)
             break;
         cursor++;
     }
-    if (*cursor == '\n' || *cursor == '\0')
-    {
-        fprintf(stderr, "Could not parse instruction\n");
-        return NULL;
-    }
+    // if (*cursor == '\n' || *cursor == '\0')
+    // {
+    //     fprintf(stderr, "Could not parse instruction\n");
+    //     return NULL;
+    // }
 
     size_t parsedLength = cursor - start;
     OPS op = NA_OP;
@@ -348,71 +349,45 @@ char *getInstruct(char *cursor, INSTR_STRUCT **parsedIns)
             }
         }
     }
-    switch (op)
+    if(op == NA_OP)
     {
-        case ADDI:
-        {
-
-            INSTR_STRUCT *newInstr = ALLO_mallocInstr(ADDI, sizeof(INSTR_STRUCT) + 6);
-            if (newInstr == NULL)
-            {
-                fprintf(stderr, "Failed to malloc instruction");
-                return NULL;
-            }
-            NODE *newNode = malloc(sizeof(NODE));
-            if (newNode == NULL)
-            {
-                fprintf(stderr, "Failed to malloc instruction");
-                return NULL;
-            }
-            newNode->type = INSTR;
-            newNode->data = newInstr;
-            LIST_add_node(headInstr, newNode);
-            char *argStart = start + parsedLength;
-            cursor = findArgs(ADDI, cursor, newInstr->args, headLabel);
-            printBytesFromBuffer(newInstr->args,3);
-            if (cursor == NULL)
-                return NULL;
-
-            fprintf(stderr, "\n");
-
-            return cursor;
-            break;
-        }
-        case ADD:
-        {
-
-            INSTR_STRUCT *newInstr = ALLO_mallocInstr(ADDI, sizeof(INSTR_STRUCT) + 3);
-            if (newInstr == NULL)
-            {
-                fprintf(stderr, "Failed to malloc instruction");
-                return NULL;
-            }
-            NODE *newNode = malloc(sizeof(NODE));
-            if (newNode == NULL)
-            {
-                fprintf(stderr, "Failed to malloc instruction");
-                return NULL;
-            }
-            newNode->type = INSTR;
-            newNode->data = newInstr;
-            LIST_add_node(headInstr, newNode);
-            char *argStart = start + parsedLength;
-            cursor = findArgs(ADD, cursor, newInstr->args, headLabel);
-            // printBytesFromBuffer(newInstr->args,3);
-            if (cursor == NULL)
-                return NULL;
-            fprintf(stderr, "\n");
-
-            return cursor;
-            break;
-        }
-    
-        default:
-            break;
+        char tokenString[parsedLength + 1];
+        memcpy(tokenString,start,parsedLength);
+        tokenString[parsedLength] = '\0';
+        fprintf(stderr, "Unrecognized instruction %s\n", start);
+        return NULL;
     }
+    NODE *newNode = malloc(sizeof(*newNode));
+    if (newNode == NULL)
+    {
+        fprintf(stderr, "Failed to malloc instruction");
+        return NULL;
+    }
+    INSTR_STRUCT *newInstr = NULL;
+    
+    newNode->type = INSTR;
+    newNode->data = newInstr;
+    LIST_add_node(headInstr, newNode);
+    char *argStart = start + parsedLength;
+    size_t argSizeBytes = ARG_OP_SIZE[op];
 
-    return NULL;
+    newInstr = ALLO_mallocInstr(op, argSizeBytes);
+    if (newInstr == NULL)
+    {
+        fprintf(stderr, "Failed to malloc instruction");
+        return NULL;
+    }
+    cursor = findArgs(op, cursor, newInstr->args, headLabel);
+
+    printBytesFromBuffer(newInstr->args,argSizeBytes);
+    // int z = *(int *)(newInstr->args + 2);
+    // printf("%d\n",z);
+    if (cursor == NULL)
+        return NULL;
+
+    *parsedIns = newInstr;
+
+    return cursor;
 }
 
 // Returns 1 on Success
@@ -443,7 +418,7 @@ void init()
     headData->next = headData;
     headData->prev = headData;
     headData->type = NONE;
-
+    
     if ((headLabel = malloc(sizeof(NODE))) == NULL)
     {
         fprintf(stderr, "Failed to malloc space\n");

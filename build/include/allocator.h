@@ -11,7 +11,7 @@
 //Structure for instruction, note argsSize must be 32 bit word aligned
 typedef struct inst{
     OPS opType;
-    size_t argsSizeBits;
+    size_t argSizeBytes;
     char args[];
 }INSTR_STRUCT;
 
@@ -28,7 +28,7 @@ typedef struct label{
 
     size_t labelSize;
     INSTR_STRUCT *instRef;
-    char   label[];
+    char label[];
 }LABEL_STRUCT;
 
 

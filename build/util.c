@@ -33,7 +33,7 @@ void debug(void *buffer, size_t num)
         char temp[num +1];
         memcpy(temp,buffer,num);
         temp[num] = '\0';
-        printf("%p:%s\n",temp,temp);
+        printf("%p:%s\n",buffer,temp);
 }
 
 int checkExtension(char *file)
@@ -71,6 +71,7 @@ void printBytesFromBuffer(void *buffer, size_t numBytes)
         fprintf(stderr,"%0.2x", c);
         fflush(stderr);
     }
+    fprintf(stderr, "\n");
 }
 
 //Checks if str is all numbers. 1 if all numbers
@@ -104,14 +105,19 @@ REGS mapsReg(char *regStr, size_t length)
 LABEL_STRUCT *findLabel(NODE *head, char *labelStr, size_t length)
 {
     NODE *currNode = head->next;
-
+    char compareString[length + 1];
+    memcpy(compareString + 1, labelStr, length);
+    compareString[0] = '#';
     while(currNode != head)
     {
         LABEL_STRUCT *labelStruct = (LABEL_STRUCT *)currNode->data;
-        if(length == labelStruct->labelSize)
+        if(length + 1 == labelStruct->labelSize)
         {
-            if(strncmp(labelStr, labelStruct->label,length) == 0)
+            char res[labelStruct->labelSize];
+            memcpy(res,labelStruct->label,labelStruct->labelSize);
+            if(strncmp(compareString,res,length + 1) == 0)
                 return labelStruct;
+
         }
         currNode = currNode->next;
     }

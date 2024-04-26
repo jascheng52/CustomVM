@@ -15,6 +15,11 @@ char  *findArgs(OPS opType, char *cursor, char *buffer, NODE *labelList)
 
     switch (expectedARG)
     {
+        case NO_ARG:
+        {
+            return cursor;
+        }
+
         case N:
         {
             cursor = skipWhite(cursor);
@@ -41,7 +46,7 @@ char  *findArgs(OPS opType, char *cursor, char *buffer, NODE *labelList)
                 if(*firstArg > 47 && *firstArg < 58)
                 {
                     intAdded = intAdded * 10;
-                    intAdded = *firstArg - 48;
+                    intAdded = intAdded + *firstArg - 48;
                     firstArg++;
                 }
                 else
@@ -74,7 +79,6 @@ char  *findArgs(OPS opType, char *cursor, char *buffer, NODE *labelList)
             
             unsigned short argResults = 0;
             argResults = argResults | arg1;
-
             //one byte register 
             memcpy(buffer,&argResults , 1);
 
@@ -93,7 +97,7 @@ char  *findArgs(OPS opType, char *cursor, char *buffer, NODE *labelList)
             void *res = findLabel(labelList,labelName,parsedLength);
             if(res == NULL)
             {
-                fprintf(stderr,"Failed to find label %s declared", labelName);
+                fprintf(stderr,"Failed to find label %s declared\n", labelName);
                 return NULL;
             }
 
@@ -147,7 +151,7 @@ char  *findArgs(OPS opType, char *cursor, char *buffer, NODE *labelList)
                 if(*secondArg > 47 && *secondArg < 58)
                 {
                     intAdded = intAdded * 10;
-                    intAdded = *secondArg - 48;
+                    intAdded = intAdded + *secondArg - 48;
                     secondArg++;
                 }
                 else
@@ -199,56 +203,13 @@ char  *findArgs(OPS opType, char *cursor, char *buffer, NODE *labelList)
             }
             
             unsigned int argResults = 0;
-            argResults = argResults | arg1;
-            argResults = argResults << 4;
             argResults = argResults | arg2;
+            argResults = argResults << 4;
+            argResults = argResults | arg1;
             argResults = argResults << 4;
 
             //only 2 bytes needed to store registers
             memcpy(buffer,&argResults , 2);
-            return cursor;
-        }
-
-        case R_L:
-        {        
-            cursor = skipWhite(cursor);
-            char *start = cursor;
-            cursor = argAdvanceSkip(cursor);
-            size_t parsedLength = cursor - start;    
-
-            REGS arg1 = mapsReg(start,parsedLength);
-            if(arg1 == NA_REG)
-            {
-                fprintf(stderr, "Expected register as first argument\n");
-                return NULL;
-            }
-            cursor = skipWhite(cursor);
-            if(*cursor == '\n' || *cursor == '\0')
-            {
-                fprintf(stderr, "Expected register as second argument\n");
-                return NULL;
-            }
-
-            start = cursor;
-            cursor = argAdvanceSkip(cursor);
-            parsedLength = cursor - start;
-            char labelName[parsedLength+1];
-            memcpy(labelName,start,parsedLength);
-            labelName[parsedLength] = '\0';
-            void *res = findLabel(labelList,labelName,parsedLength);
-            if(res == NULL)
-            {
-                fprintf(stderr,"Failed to find label %s declared", labelName);
-                return NULL;
-            }
-            
-            unsigned int argResults = 0;
-            argResults = argResults | arg1;
-
-            //only 1 bytes needed to store registers
-            //address of label struct stored
-            memcpy(buffer,&argResults , 1);
-            memcpy(buffer + 1, &res, sizeof(res));
             return cursor;
         }
 
@@ -368,7 +329,7 @@ char  *findArgs(OPS opType, char *cursor, char *buffer, NODE *labelList)
                 if(*thirdArg > 47 && *thirdArg < 58)
                 {
                     intAdded = intAdded * 10;
-                    intAdded = *thirdArg - 48;
+                    intAdded = intAdded + *thirdArg - 48;
                     thirdArg++;
                 }
                 else
