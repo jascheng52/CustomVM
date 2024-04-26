@@ -26,7 +26,6 @@ typedef enum{
     STRW,
     MV,
     JMP,
-    CALL,
     RET,
     SYSCALL,
     NOP,
@@ -41,7 +40,6 @@ typedef enum{
     N,
     R_N,
     R_R,
-    R_L,
     R_R_N,
     R_R_R
 }REG_ARG_TYPE;
@@ -69,12 +67,12 @@ static const char *const VALID_INS[] = {
     [STRW] = "strw",
     [MV] = "mv",
     [JMP] = "jmp",
-    [CALL] = "call",
     [RET] = "ret",
     [SYSCALL] = "syscall",
-    [NOP] = "NOP"
+    [NOP] = "nop"
 };
 
+//Lookup Table for argument type of op
 static const REG_ARG_TYPE const REG_TYPE_MAP[] = {
     [NA_OP] = NO_ARG,
 	[ADDI] = R_R_N,
@@ -95,11 +93,38 @@ static const REG_ARG_TYPE const REG_TYPE_MAP[] = {
     [LDW] = R_R,
     [STRW] = R_R,
     [MV] = R_R,
-    [JMP] = R_L,
-    [CALL] = L,
+    [JMP] = L,
     [RET] = NO_ARG,
     [SYSCALL] = N,
     [NOP] = NO_ARG    
+
+};
+
+//Lookup table of size in bytes that arg take
+static const REG_ARG_TYPE const ARG_OP_SIZE[] = {
+    [NA_OP] = 0,
+	[ADDI] = 6,
+	[ADD] = 3,
+	[MULT_I] = 5,
+	[MULT] = 2,
+    [AND] = 3,
+    [OR] = 3,
+    [XOR] = 3,
+    [NOT] = 1,
+    [SL] = 5,
+    [SR] = 5,
+    [GRT] = 3,
+    [LST] = 3,
+    [EQU] = 3,
+    [LDB] = 2,
+    [STRB] = 2,
+    [LDW] = 2,
+    [STRW] = 2,
+    [MV] = 2,
+    [JMP] = sizeof(void *),
+    [RET] = 0,
+    [SYSCALL] = 4,
+    [NOP] = 0    
 
 };
 

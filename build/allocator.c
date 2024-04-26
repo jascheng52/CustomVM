@@ -55,7 +55,8 @@ int ALLO_checkDataRep(NODE* listHead, char *dataName, size_t dataLength)
 //Mallocs a label struct. Callers responsible to free. Null if fail
 LABEL_STRUCT *ALLO_mallocLabel(size_t labelSize)
 {
-    LABEL_STRUCT *newLabel = malloc(sizeof(LABEL_STRUCT) + labelSize);
+    LABEL_STRUCT *newLabel = malloc(sizeof(*newLabel) + labelSize);
+    newLabel->labelSize = labelSize;
     newLabel->instRef = 0;
     return newLabel;
 }
@@ -93,11 +94,10 @@ int ALLO_checkLabelRep(NODE* listHead, char *labelName, size_t labelLength)
 //Mallocs a instruction struct. Callers responsible to free. Null if fail
 INSTR_STRUCT *ALLO_mallocInstr(OPS opType,size_t argLength)
 {
-    size_t numBits = wordAlign(argLength);
-    INSTR_STRUCT *newStruct = malloc(sizeof(INSTR_STRUCT) + numBits/WORD_LENGTH);
+    INSTR_STRUCT *newStruct = malloc(sizeof(*newStruct) + argLength);
     newStruct->opType = opType;
-    newStruct->argsSizeBits = numBits;
-    memset(newStruct->args,0,numBits/WORD_LENGTH);
+    newStruct->argSizeBytes;
+    memset(newStruct->args,0,argLength);
     
     return newStruct;
 }
