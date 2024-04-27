@@ -23,6 +23,7 @@ typedef enum{
     LDB,
     STRB,
     LDW,
+    LDA,
     STRW,
     MV,
     JMP,
@@ -32,12 +33,13 @@ typedef enum{
     NA_OP
 }OPS;
 
-//Expected arg type. R=Register L=Label N=Number
+//Expected arg type. R=Register L=Label N=Number D = Data
 typedef enum{
     NO_ARG,
     R,
     L,
     N,
+    D,
     R_N,
     R_R,
     R_R_N,
@@ -64,6 +66,7 @@ static const char *const VALID_INS[] = {
     [LDB] = "ldb",
     [STRB] = "strb",
     [LDW] = "ldw",
+    [LDA] = "lda",
     [STRW] = "strw",
     [MV] = "mv",
     [JMP] = "jmp",
@@ -91,6 +94,7 @@ static const REG_ARG_TYPE const REG_TYPE_MAP[] = {
     [LDB] = R_R,
     [STRB] = R_R,
     [LDW] = R_R,
+    [LDA] = D,
     [STRW] = R_R,
     [MV] = R_R,
     [JMP] = L,
@@ -119,6 +123,7 @@ static const REG_ARG_TYPE const ARG_OP_SIZE[] = {
     [LDB] = 2,
     [STRB] = 2,
     [LDW] = 2,
+    [LDA] = sizeof(void *),
     [STRW] = 2,
     [MV] = 2,
     [JMP] = sizeof(void *),

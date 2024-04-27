@@ -309,6 +309,15 @@ int parseLine(char *lineBuffer, char *currLine, int *instrNum)
             cursor = getInstruct(cursor, &parsedIns);
             if (cursor == NULL)
                 return -1;
+
+            //Binding label to instruction
+            if(LABELFLAG)
+            {
+                LABEL_STRUCT *lastLabel = headLabel->prev->data;
+                lastLabel->instRef = parsedIns;
+                LABELFLAG = 0;
+            }
+
             break;
         }
         }
@@ -377,7 +386,7 @@ char *getInstruct(char *cursor, INSTR_STRUCT **parsedIns)
         fprintf(stderr, "Failed to malloc instruction");
         return NULL;
     }
-    cursor = findArgs(op, cursor, newInstr->args, headLabel);
+    cursor = findArgs(op, cursor, newInstr->args, headLabel,headData);
 
     printBytesFromBuffer(newInstr->args,argSizeBytes);
     // int z = *(int *)(newInstr->args + 2);

@@ -9,7 +9,7 @@
 #include <list.h>
 
 //tries to parse the correct args. Returns char* on end of line, null on any error
-char  *findArgs(OPS opType, char *cursor, char *buffer, NODE *labelList)
+char  *findArgs(OPS opType, char *cursor, char *buffer, NODE *labelList, NODE *dataList)
 {
     REG_ARG_TYPE expectedARG = REG_TYPE_MAP[opType];
 
@@ -98,6 +98,29 @@ char  *findArgs(OPS opType, char *cursor, char *buffer, NODE *labelList)
             if(res == NULL)
             {
                 fprintf(stderr,"Failed to find label %s declared\n", labelName);
+                return NULL;
+            }
+
+            //stores the POINTER of the label struct, dereference 
+            //to get label struct pointer
+            memcpy(buffer,&res , sizeof(res));
+
+            return cursor;
+        }
+
+        case D:
+        {
+            cursor = skipWhite(cursor);
+            char *start = cursor;
+            cursor = argAdvanceSkip(cursor);
+            size_t parsedLength = cursor - start;
+            char dataName[parsedLength+1];
+            memcpy(dataName,start,parsedLength);
+            dataName[parsedLength] = '\0';
+            void *res = findData(dataList,dataName, parsedLength);
+            if(res == NULL)
+            {
+                fprintf(stderr,"Failed to find data name %s declared\n", dataName);
                 return NULL;
             }
 
