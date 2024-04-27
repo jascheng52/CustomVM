@@ -129,13 +129,17 @@ LABEL_STRUCT *findLabel(NODE *head, char *labelStr, size_t length)
 DATA_STRUCT *findData(NODE *head, char *dataStr, size_t length)
 {
     NODE *currNode = head->next;
-
+    char compareString[length + 1];
+    memcpy(compareString + 1, dataStr, length);
+    compareString[0] = '.';
     while(currNode != head)
     {
         DATA_STRUCT *dataStruct = (DATA_STRUCT *)currNode->data;
-        if(length == dataStruct->dataNameSize)
+        if(length + 1 == dataStruct->dataNameSize)
         {
-            if(strncmp(dataStr, dataStruct->data,length) == 0)
+            char res[dataStruct->dataNameSize];
+            memcpy(res,dataStruct->data,dataStruct->dataNameSize);
+            if(strncmp(compareString, res,length + 1) == 0)
                 return dataStruct;
         }
         currNode = currNode->next;
