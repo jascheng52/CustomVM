@@ -11,6 +11,7 @@
 //Structure for instruction, note argsSize must be 32 bit word aligned
 typedef struct inst{
     OPS opType;
+    size_t index;
     size_t argSizeBytes;
     char args[];
 }INSTR_STRUCT;
@@ -19,6 +20,7 @@ typedef struct inst{
 //Data name stored first then data
 typedef struct data{
     int isInt;
+    size_t index;
     size_t dataNameSize;
     size_t dataSize;
     char   data[];

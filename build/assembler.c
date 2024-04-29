@@ -3,6 +3,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <stdint.h>
 
 #include <assembler.h>
 #include <allocator.h>
@@ -169,6 +170,7 @@ int parseLine(char *lineBuffer, char *currLine, int *instrNum)
             // Getting data values
             char *dataEnd = NULL;
             char *dataValStart = cursor;
+            size_t dataValLength = 0;
             // Signals to parse as string or int
             int NOQUOTESFLAG = 1;
             if (*cursor == '"')
@@ -176,7 +178,6 @@ int parseLine(char *lineBuffer, char *currLine, int *instrNum)
                 NOQUOTESFLAG = 0;
                 cursor++;
                 dataValStart = cursor;
-                cursor++;
                 while (1)
                 {
                     if (*cursor == '\n' || *cursor == '\0')
@@ -188,7 +189,7 @@ int parseLine(char *lineBuffer, char *currLine, int *instrNum)
                     {
                         char *temp = cursor + 1;
                         temp = skipWhite(temp);
-                        if (*temp == '\n')
+                        if (*temp == '\n' || *cursor == '\0')
                             break;
                         cursor = temp - 1;
                     }
@@ -196,43 +197,50 @@ int parseLine(char *lineBuffer, char *currLine, int *instrNum)
                 }
 
                 dataEnd = cursor;
+                dataValLength = dataEnd - dataValStart;
             }
             else
             {
+                int32_t total = 0;
+                int neg = 1;
+                if(*cursor == '-')
+                {
+                    neg = -1;
+                    cursor++;
+                }
                 while (*cursor != '\n')
                 {
                     if (*cursor == ' ' || *cursor == '\t' || *cursor == '\0')
                         break;
+                    total = total * 10;
+                    total = total + *cursor - 48;
                     cursor++;
                 }
-
                 dataEnd = cursor;
+                size_t min = 0;
+                if(neg == -1)
+                    min = 1;
+                if(dataEnd - dataValStart == min)
+                {
+                    fprintf(stderr,"Missing data value declaration\n");
+                    return -1;
+                }
+                dataValLength = 4;
             }
-            int dataValLength = dataEnd - dataValStart;
+            
             DATA_STRUCT *newData = ALLO_mallocData(dataNameLength, dataValLength);
             if (newData == NULL)
             {
                 fprintf(stderr, "Failed to malloc new data\n");
                 exit(EXIT_FAILURE);
             }
+            
+            if (NOQUOTESFLAG)
+                newData->isInt = 1;
+        
             memcpy(newData->data, dataStart, dataNameLength);
             memcpy(newData->data + dataNameLength, dataValStart, dataValLength);
-            // parses data as int for no quotes
-            if (NOQUOTESFLAG)
-            {
-                char *red = newData->data + newData->dataNameSize;
-                for (int i = 0; i < dataValLength; i++)
-                {
-                    if (*red == '-')
-                    {
-                        red++;
-                        continue;
-                    }
-                    *red = *red - 48;
-                    red++;
-                }
-                newData->isInt = 1;
-            }
+
             NODE *newNode = malloc(sizeof(NODE));
             if (newNode == NULL)
             {
@@ -406,6 +414,7 @@ int createFile(char *file, char *buffer, size_t size)
     memcpy(newFileName, file, strlen(file) - 4);
     memcpy(newFileName + strlen(file) - 4, "jac", 3);
     newFileName[strlen(file) - 1] = '\0';
+    
     FILE *newFile = fopen(newFileName, "w");
     if (newFile == NULL)
         return -1;
@@ -445,4 +454,42 @@ void init()
     headInstr->next = headInstr;
     headInstr->prev = headInstr;
     headInstr->type = NONE;
+}
+
+// Return numbeter of bytes written
+size_t writeData(char *buffer, size_t offset, FILE *file)
+{
+
+    size_t newOffset = offset;
+    NODE *cursor = headData->next;
+
+    while(cursor != headData)
+    {
+        DATA_STRUCT *res = (DATA_STRUCT *)cursor->data;
+        res->index = newOffset;
+        char *dataValStart = res->data + res->dataNameSize;
+        size_t numWrite = 0;
+
+        if(res->isInt)
+        {
+            numWrite = fwrite(buffer,1,res->dataSize,file);
+        }
+        else
+        {
+            char dataWrite[res->dataSize + 1];
+            memcpy(dataValStart, dataValStart,res->dataSize);
+            dataWrite[res->dataSize] = '\0';
+            numWrite = fwrite(dataWrite,1,res->dataSize + 1,file);
+        }
+        
+        if(numWrite == 0)
+        {
+            fprintf(stderr, "Failed to write to file\n");
+            exit(EXIT_FAILURE);
+        }
+        newOffset = newOffset + numWrite;
+    
+    }
+
+    return offset;
 }

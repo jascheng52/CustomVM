@@ -10,10 +10,11 @@
 //Mallocs a data struct and fills size fields.NOT DATA. Callers responsible to free. Null if fail
 DATA_STRUCT *ALLO_mallocData(int dataNameSize, int dataSize)
 {
-    DATA_STRUCT *newData = malloc(sizeof(DATA_STRUCT) + (dataNameSize + dataSize));
+    DATA_STRUCT *newData = malloc(sizeof(*newData) + (dataNameSize + dataSize));
     newData->dataNameSize = dataNameSize;
     newData->dataSize = dataSize;
     newData->isInt = 0;
+    newData->index = 0;
     return newData;
 }
 
