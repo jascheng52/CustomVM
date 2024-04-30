@@ -17,7 +17,8 @@ int parseFile(FILE *openFile, char *buffer);
 int parseLine(char *lineBuffer, char *currLine, int *instrNum);
 int getNextToken(char *lineBuffer);
 char *getInstruct(char *cursor, INSTR_STRUCT **parsedIns);
-size_t writeData(char *buffer, size_t offset, FILE *file);
+size_t writeData(size_t offset, FILE *file);
+size_t writeIns(size_t offset, FILE *file);
 
 void init();
 

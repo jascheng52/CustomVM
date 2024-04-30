@@ -171,6 +171,8 @@ int parseLine(char *lineBuffer, char *currLine, int *instrNum)
             char *dataEnd = NULL;
             char *dataValStart = cursor;
             size_t dataValLength = 0;
+            int32_t total = 0;
+
             // Signals to parse as string or int
             int NOQUOTESFLAG = 1;
             if (*cursor == '"')
@@ -201,7 +203,6 @@ int parseLine(char *lineBuffer, char *currLine, int *instrNum)
             }
             else
             {
-                int32_t total = 0;
                 int neg = 1;
                 if(*cursor == '-')
                 {
@@ -226,6 +227,7 @@ int parseLine(char *lineBuffer, char *currLine, int *instrNum)
                     return -1;
                 }
                 dataValLength = 4;
+                dataValStart =  (void *)&total;
             }
             
             DATA_STRUCT *newData = ALLO_mallocData(dataNameLength, dataValLength);
@@ -374,26 +376,27 @@ char *getInstruct(char *cursor, INSTR_STRUCT **parsedIns)
         fprintf(stderr, "Unrecognized instruction %s\n", start);
         return NULL;
     }
+    
+    char *argStart = start + parsedLength;
+    size_t argSizeBytes = ARG_OP_SIZE[op];
+
+    INSTR_STRUCT *newInstr = ALLO_mallocInstr(op, argSizeBytes);
+    if (newInstr == NULL)
+    {
+        fprintf(stderr, "Failed to malloc instruction");
+        return NULL;
+    }
+
     NODE *newNode = malloc(sizeof(*newNode));
     if (newNode == NULL)
     {
         fprintf(stderr, "Failed to malloc instruction");
         return NULL;
     }
-    INSTR_STRUCT *newInstr = NULL;
-    
     newNode->type = INSTR;
     newNode->data = newInstr;
     LIST_add_node(headInstr, newNode);
-    char *argStart = start + parsedLength;
-    size_t argSizeBytes = ARG_OP_SIZE[op];
 
-    newInstr = ALLO_mallocInstr(op, argSizeBytes);
-    if (newInstr == NULL)
-    {
-        fprintf(stderr, "Failed to malloc instruction");
-        return NULL;
-    }
     cursor = findArgs(op, cursor, newInstr->args, headLabel,headData);
 
     printBytesFromBuffer(newInstr->args,argSizeBytes);
@@ -415,11 +418,25 @@ int createFile(char *file, char *buffer, size_t size)
     memcpy(newFileName + strlen(file) - 4, "jac", 3);
     newFileName[strlen(file) - 1] = '\0';
     
-    FILE *newFile = fopen(newFileName, "w");
+    FILE *newFile = fopen(newFileName, "wb");
     if (newFile == NULL)
         return -1;
-    if (fwrite(buffer, 1, size, newFile) < size)
-        return -1;
+    size_t instructionStart = 0;
+    fwrite(&instructionStart,1,sizeof(size_t), newFile);
+
+    size_t offset = sizeof(instructionStart);
+    offset = offset + writeData(offset,newFile);
+    instructionStart = offset;
+    fprintf(stderr,"Written Bytes Data: %d\n", offset);
+
+    //Updating instruction start
+    fseek(newFile,0,SEEK_SET);
+    fwrite(&instructionStart,1,sizeof(size_t), newFile);
+    fseek(newFile,instructionStart,SEEK_SET);
+
+    size_t finalSize = writeIns(offset,newFile);
+    fprintf(stderr,"Written Bytes Instructions: %d\n", finalSize-offset);
+
 
     fclose(newFile);
     return 1;
@@ -456,8 +473,8 @@ void init()
     headInstr->type = NONE;
 }
 
-// Return numbeter of bytes written
-size_t writeData(char *buffer, size_t offset, FILE *file)
+// Return number of bytes written
+size_t writeData(size_t offset, FILE *file)
 {
 
     size_t newOffset = offset;
@@ -469,27 +486,71 @@ size_t writeData(char *buffer, size_t offset, FILE *file)
         res->index = newOffset;
         char *dataValStart = res->data + res->dataNameSize;
         size_t numWrite = 0;
-
+        char dataWrite[res->dataSize + 1];
+        memcpy(dataWrite, dataValStart,res->dataSize);
+        dataWrite[res->dataSize] = '\0';
+        size_t toCopy = res->dataSize + 1;
         if(res->isInt)
         {
-            numWrite = fwrite(buffer,1,res->dataSize,file);
+            toCopy--;
         }
-        else
-        {
-            char dataWrite[res->dataSize + 1];
-            memcpy(dataValStart, dataValStart,res->dataSize);
-            dataWrite[res->dataSize] = '\0';
-            numWrite = fwrite(dataWrite,1,res->dataSize + 1,file);
-        }
-        
+    
+        numWrite = fwrite(dataWrite,1,toCopy,file);
         if(numWrite == 0)
         {
             fprintf(stderr, "Failed to write to file\n");
             exit(EXIT_FAILURE);
         }
         newOffset = newOffset + numWrite;
-    
+        cursor = cursor->next;
     }
 
-    return offset;
+    return newOffset;
+}
+size_t writeIns(size_t offset, FILE *file)
+{
+    size_t newOffset = offset;
+
+    NODE *cursor = headInstr->next;
+
+    while(cursor != headInstr)
+    {
+        INSTR_STRUCT *instruct = (INSTR_STRUCT *) cursor->data;
+        instruct->index = offset;
+
+        OPS op = instruct->opType;
+
+        newOffset = newOffset + fwrite(&op,1,2,file); 
+        REG_ARG_TYPE argType = REG_TYPE_MAP[op];
+        char *argStart = instruct->args;
+
+        switch(argType)
+        {
+            //Limit 32 bits for fiel references.
+            case L:
+            {
+                LABEL_STRUCT *label = *((LABEL_STRUCT **)argStart);
+                INSTR_STRUCT *ref = label->instRef;
+                newOffset = newOffset + fwrite(&ref->index,1,sizeof(u_int32_t),file);
+                break;
+            }
+            case D:
+            {
+                DATA_STRUCT *data = *((DATA_STRUCT **)argStart);
+
+                newOffset = newOffset + fwrite(&data->index,1,sizeof(u_int32_t),file);
+                break;
+            }
+
+            default:
+            {
+                newOffset = newOffset + fwrite(argStart,1,instruct->argSizeBytes,file);
+                break;
+            }
+        }
+
+        cursor = cursor->next;
+    }
+    
+    return newOffset;
 }

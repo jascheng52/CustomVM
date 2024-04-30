@@ -97,7 +97,7 @@ INSTR_STRUCT *ALLO_mallocInstr(OPS opType,size_t argLength)
 {
     INSTR_STRUCT *newStruct = malloc(sizeof(*newStruct) + argLength);
     newStruct->opType = opType;
-    newStruct->argSizeBytes;
+    newStruct->argSizeBytes = argLength;
     memset(newStruct->args,0,argLength);
     
     return newStruct;
