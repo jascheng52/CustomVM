@@ -1,0 +1,26 @@
+.dog "Hello"
+
+add $s7 $s3 $s1 
+addi $s6 $s6 500
+multi $s2 200
+mult $s7 $s3
+and $s7 $s3 $s1 
+or $s7 $s3 $s1 
+xor $s7 $s3 $s1 
+not $a0
+sl $s3 4
+#here
+sr $s3 1
+grt $s7 $s3 $s1 
+lst $s7 $s3 $s1
+equ $s7 $s3 $s1 
+ldb $s7 $s3
+strb $s7 $s3
+ldw $s7 $s3
+strw $s7 $s3 
+mv $s2 $s3
+ret
+syscall 5
+nop
+jmp here
+lda dog

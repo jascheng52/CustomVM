@@ -1,0 +1,4 @@
+add $s7 $s3 $s1 addi $s0 $s1 5
+
+addi $s0 $s1 5
+addi $s0 $s1 5
