@@ -14,7 +14,8 @@
 
 char PROCESS_STACK[MAX_STACK_SIZE];
 
-uint32_t REG[NUM_REGISTERS];
+ 
+uint32_t glob_reg[16];
 
 int main(int argc, char **argv)
 {
@@ -61,10 +62,10 @@ int main(int argc, char **argv)
         }
         numWritten = numWritten + num;
     }
-    
-
-
     close(progFile);
+
+
+
     return 0;
 }
 
