@@ -9,6 +9,7 @@
 #define MAX_FILE_LENGTH 256
 #define NUM_REGISTERS 16
 
+extern char PROCESS_STACK[MAX_STACK_SIZE];
 extern uint32_t glob_reg[16];
 
 int checkExtension(char *file);

@@ -73,7 +73,7 @@ void run()
 {
     //Setting pointer of sp to the top of stack
     //Grows down
-    REG[SP] = MAX_STACK_SIZE;
+    glob_reg[SP] = MAX_STACK_SIZE;
 
 
 }

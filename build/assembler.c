@@ -534,11 +534,11 @@ size_t writeIns(size_t offset, FILE *file)
                 newOffset = newOffset + fwrite(&ref->index,1,sizeof(u_int32_t),file);
                 break;
             }
-            case D:
+            case D_R:
             {
-                DATA_STRUCT *data = *((DATA_STRUCT **)argStart);
-
-                newOffset = newOffset + fwrite(&data->index,1,sizeof(u_int32_t),file);
+                DATA_STRUCT *data = *((DATA_STRUCT **) (argStart + 2));
+                newOffset = newOffset + fwrite(argStart, 1, 2, file);
+                newOffset = newOffset + fwrite(&data->index, 1, sizeof(u_int32_t), file);
                 break;
             }
 

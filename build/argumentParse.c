@@ -108,7 +108,7 @@ char *findArgs(OPS opType, char *cursor, char *buffer, NODE *labelList, NODE *da
         return cursor;
     }
 
-    case D:
+    case D_R:
     {
         cursor = skipWhite(cursor);
         char *start = cursor;
@@ -123,10 +123,23 @@ char *findArgs(OPS opType, char *cursor, char *buffer, NODE *labelList, NODE *da
             fprintf(stderr, "Failed to find data name %s declared\n", dataName);
             return NULL;
         }
+         
+        cursor = skipWhite(cursor);
+        start = cursor;
+        cursor = argAdvanceSkip(cursor);
+        parsedLength = cursor - start;
+        REGS arg1 = mapsReg(start, parsedLength);
+        if (arg1 == NA_REG)
+        {
+            fprintf(stderr, "Expected register as second argument\n");
+            return NULL;
+        }
+
 
         // stores the POINTER of the label struct, dereference
         // to get label struct pointer
-        memcpy(buffer, &res, sizeof(res));
+        memcpy(buffer, &arg1,1);
+        memcpy(buffer + 2, &res, sizeof(res));
 
         return cursor;
     }
