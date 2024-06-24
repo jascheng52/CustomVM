@@ -163,8 +163,17 @@ void INS_ret()
 void INS_syscall(size_t number)
 {
     return;
-},REGS arg0);
-void INS_storeWord(REGS desReg, 
+}
+void INS_storeWord(REGS desReg, REGS arg0)
+{
+    uint32_t orig_add = glob_reg[arg0];
+    uint32_t des_add = glob_reg[desReg];
+
+    char * proc_add = &PROCESS_STACK[orig_add];
+    char * proc_des = &PROCESS_STACK[des_add];
+    memcpy(des_add,proc_add,sizeof(uint32_t));
+    return;
+}
 
 void INS_nop()
 {
@@ -177,10 +186,9 @@ char *INS_executeNext(char* start)
 {
    
     
-    OPS opCode = (OPS)(*start | 0);
-    start++;
+    OPS opCode = (OPS)(*((uint32_t *)start) & 0x00ff); 
+    start = start + 2;
     REG_ARG_TYPE type = REG_TYPE_MAP[opCode];
-    
     switch (type)
     {
         case R_R_R:
@@ -223,14 +231,28 @@ char *INS_executeNext(char* start)
             REGS desReg = *(REGS *) (*start|0);
             start++;
             uint32_t dataOffset = *(uint32_t *)start;
-            ((two_reg)func_table[opCode]) (dataOffset,desReg);
+            ((reg_num)func_table[opCode]) (dataOffset,desReg);
             start = start + sizeof(uint32_t);
+            return start;
+        }
 
+        case R: //unused for now
+        case L:
+        case N:
+        {
+            
+            size_t offset = (uint32_t *)start;
+            ((number)func_table[opCode])(offset);
+            start = start + sizeof(uint32_t);
+            return start;
+        }
+
+        case NO_ARG:
+        {
+            ((no_args)func_table[opCode])();
             return start;
         }
         
-
-
         default:
             break;
     }

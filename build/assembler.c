@@ -434,7 +434,7 @@ int createFile(char *file, char *buffer, size_t size)
     fwrite(&instructionStart,1,sizeof(size_t), newFile);
     fseek(newFile,instructionStart,SEEK_SET);
 
-    size_t finalSize = writeIns(offset,newFile);
+    size_t finalSize = writeIns(offset, newFile);
     fprintf(stderr,"Written Bytes Instructions: %d\n", finalSize-offset);
 
 
@@ -537,7 +537,7 @@ size_t writeIns(size_t offset, FILE *file)
             case D_R:
             {
                 DATA_STRUCT *data = *((DATA_STRUCT **) (argStart + 2));
-                newOffset = newOffset + fwrite(argStart, 1, 2, file);
+                newOffset = newOffset + fwrite(argStart, 1, 1, file);
                 newOffset = newOffset + fwrite(&data->index, 1, sizeof(u_int32_t), file);
                 break;
             }
