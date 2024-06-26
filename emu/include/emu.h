@@ -13,5 +13,6 @@ extern char PROCESS_STACK[MAX_STACK_SIZE];
 extern uint32_t glob_reg[16];
 
 int checkExtension(char *file);
+void run();
 
 #endif /*emu.h*/
