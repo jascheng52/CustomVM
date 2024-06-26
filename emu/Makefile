@@ -5,7 +5,7 @@ CFLAGS += -g3 -O0
 INC= include ../arch/include
 INC_PARAMS=$(foreach d, $(INC), -I$d)
 
-LOC_OBJ = emu.o
+LOC_OBJ = instructions.o emu.o 
 EX_OBJ = 
 OBJECTS := $(LOC_OBJ) $(EX_OBJ)
 

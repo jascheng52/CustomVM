@@ -516,7 +516,7 @@ size_t writeIns(size_t offset, FILE *file)
     while(cursor != headInstr)
     {
         INSTR_STRUCT *instruct = (INSTR_STRUCT *) cursor->data;
-        instruct->index = offset;
+        instruct->index = newOffset;
 
         OPS op = instruct->opType;
 

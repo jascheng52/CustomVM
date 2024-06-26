@@ -238,11 +238,10 @@ char *findArgs(OPS opType, char *cursor, char *buffer, NODE *labelList, NODE *da
             return NULL;
         }
 
-        unsigned int argResults = 0;
+        uint32_t argResults = 0;
         argResults = argResults | arg2;
-        argResults = argResults << 4;
+        argResults = argResults << 8;
         argResults = argResults | arg1;
-        argResults = argResults << 4;
 
         // only 2 bytes needed to store registers
         memcpy(buffer, &argResults, 2);
@@ -375,7 +374,7 @@ char *findArgs(OPS opType, char *cursor, char *buffer, NODE *labelList, NODE *da
             }
         }
         intAdded = intAdded * negScaler;
-        unsigned short argResults = 0;
+        uint32_t argResults = 0;
         argResults = argResults | arg2;
         argResults = argResults << 8;
         argResults = argResults | arg1;

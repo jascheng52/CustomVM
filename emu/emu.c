@@ -7,7 +7,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <errno.h>
-
+#include <instructions.h>
 
 #include <emu.h>
 
@@ -62,9 +62,13 @@ int main(int argc, char **argv)
         }
         numWritten = numWritten + num;
     }
+    PROCESS_STACK[numWritten] = 0xff;
+    PROCESS_STACK[numWritten + 1] = 0xff;
+    numWritten = numWritten + 2;
+
     close(progFile);
 
-
+    run();
 
     return 0;
 }
@@ -75,6 +79,14 @@ void run()
     //Grows down
     glob_reg[SP] = MAX_STACK_SIZE;
 
+    char *start = PROCESS_STACK;
+    size_t offset = *(size_t *)start;
+    start = start + offset;
+    while(*(uint16_t *)start != 0xffff)
+    {
+        start = INS_executeNext(start);
+    }
+    return;
 
 }
 
