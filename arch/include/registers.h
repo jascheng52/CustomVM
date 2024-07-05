@@ -18,6 +18,7 @@ typedef enum{
     LO,
     HI,
     IP,
+    ZERO_NUM,
     NA_REG
 }REGS;
 
@@ -39,6 +40,7 @@ static const char *const VALID_REG[] = {
     [LO] = "$lo",
     [HI] = "$hi",
     [IP] = "$ip",
+    [ZERO_NUM] = "$0", //Regist value is constant 0
     [NA_REG] = ""};
 
 #endif /*REG_H*/

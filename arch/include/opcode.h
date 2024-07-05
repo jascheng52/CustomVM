@@ -2,7 +2,7 @@
 #define OP_H
 
 #define NUM_INSTR 23
-#define NUM_REG 16
+#define NUM_REG 17 //Only 16 writeable
 #define WORD_LENGTH 32
 //Enum of valid instructions, NA means none
 //When adding or removing instructions update the string array as well
@@ -27,7 +27,6 @@ typedef enum{
     STRW,
     MV,
     JMP,
-    RET,
     SYSCALL,
     NOP,
     NA_OP
@@ -70,7 +69,6 @@ static const char *const VALID_INS[] = {
     [STRW] = "strw",
     [MV] = "mv",
     [JMP] = "jmp",
-    [RET] = "ret",
     [SYSCALL] = "syscall",
     [NOP] = "nop"
 };
@@ -98,7 +96,6 @@ static const REG_ARG_TYPE const REG_TYPE_MAP[] = {
     [STRW] = R_R,
     [MV] = R_R,
     [JMP] = L,
-    [RET] = NO_ARG,
     [SYSCALL] = N,
     [NOP] = NO_ARG    
 
@@ -127,7 +124,6 @@ static const REG_ARG_TYPE const ARG_OP_SIZE[] = {
     [STRW] = 2,
     [MV] = 2,
     [JMP] = sizeof(void *),
-    [RET] = 0,
     [SYSCALL] = 4,
     [NOP] = 0    
 
