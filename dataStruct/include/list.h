@@ -5,6 +5,7 @@ typedef enum node_type{
     NONE,
     DATA,
     LABEL,
+    BLOCK,
     INSTR
 }NODE_TYPE;
 

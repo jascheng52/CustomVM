@@ -131,8 +131,83 @@ int parseLine(char *lineBuffer, char *currLine, int *instrNum)
     {
         if (*cursor == '\0')
             return 1;
+        printf("%d\n", *cursor);
         switch (*cursor)
         {
+        case '~'://allocate memory
+        {
+            char *dataStart = cursor;
+            cursor++;
+            if (*cursor == '\n' || *cursor == ' ' || *cursor == '\t' || *cursor == '\0')
+            {
+                fprintf(stderr, "~ indicated block of data allocation but missing name\n");
+                return -1;
+            }
+            while (*cursor != '\n')
+            {
+                if (*cursor == ' ' || *cursor == '\t' || *cursor == '\0')
+                    break;
+                cursor++;
+            }
+
+            int dataNameLength = cursor - dataStart;
+            char dataName[dataNameLength + 1];
+            dataName[dataNameLength] = '\0';
+            memcpy(dataName, dataStart, dataNameLength);
+            if (ALLO_checkDataRep(headData, dataName, dataNameLength))
+            {
+                fprintf(stderr, "Repeated data varaible name %s\n", dataName);
+                return -1;
+            }
+
+            if (*cursor == '\n' || *cursor == '\0')
+            {
+                fprintf(stderr, "No data assigned to data variable declared\n");
+                return -1;
+            }
+            cursor = skipWhite(cursor);
+            // Getting data values
+            char *dataEnd = NULL;
+            char *dataValStart = cursor;
+            size_t dataValLength = 0;
+            uint32_t total = 0;
+
+            while (*cursor != '\n')
+            {
+                if (*cursor == ' ' || *cursor == '\t' || *cursor == '\0')
+                    break;
+                total = total * 10;
+                total = total + *cursor - 48;
+                cursor++;
+            }
+            dataEnd = cursor;
+            if(dataEnd - dataValStart == 0)
+            {
+                fprintf(stderr,"Missing data value declaration\n");
+                return -1;
+            }
+            dataValLength = 4;
+            dataValStart =  (void *)&total;
+            DATA_STRUCT *newData = ALLO_mallocData(dataNameLength, dataValLength);
+
+            memcpy(newData->data, dataStart, dataNameLength);
+            memcpy(newData->data + dataNameLength, dataValStart, dataValLength);
+
+            NODE *newNode = malloc(sizeof(NODE));
+            if (newNode == NULL)
+            {
+                fprintf(stderr, "Failed to malloc new list node\n");
+                exit(EXIT_FAILURE);
+            }
+            newNode->data = newData;
+            newNode->type = BLOCK;
+            if (LIST_add_node(headData, newNode) == NULL)
+            {
+                fprintf(stderr, "Failed to add data to list\n");
+                exit(EXIT_FAILURE);
+            }
+            break;
+        }
         case '.':
         {
             // case for .varName, where use can define static data
@@ -226,6 +301,7 @@ int parseLine(char *lineBuffer, char *currLine, int *instrNum)
                     fprintf(stderr,"Missing data value declaration\n");
                     return -1;
                 }
+                total = total * neg;
                 dataValLength = 4;
                 dataValStart =  (void *)&total;
             }
@@ -259,11 +335,7 @@ int parseLine(char *lineBuffer, char *currLine, int *instrNum)
             // debug(newData->data,dataNameLength+dataValLength);
             if (!NOQUOTESFLAG)
                 cursor++;
-            // if(*cursor != '\n')
-            // {
-            //     fprintf(stderr, "Detected more characters after data declarion. One declaration per line\n");
-            //     return -1;
-            // }
+            
             break;
         }
         case '#':
@@ -486,20 +558,36 @@ size_t writeData(size_t offset, FILE *file)
         res->index = newOffset;
         char *dataValStart = res->data + res->dataNameSize;
         size_t numWrite = 0;
-        char dataWrite[res->dataSize + 1];
-        memcpy(dataWrite, dataValStart,res->dataSize);
-        dataWrite[res->dataSize] = '\0';
-        size_t toCopy = res->dataSize + 1;
-        if(res->isInt)
+        if(cursor->type == BLOCK)
         {
-            toCopy--;
+            uint32_t numBytes = *(uint32_t *)dataValStart;
+            char empty[1];
+            memset(empty,0,1);
+            int counter = 0;
+            while(counter < numBytes)
+            {
+                numWrite = fwrite(empty,1,1,file) + numWrite;
+                counter++;
+            }  
         }
-    
-        numWrite = fwrite(dataWrite,1,toCopy,file);
-        if(numWrite == 0)
+        else
         {
-            fprintf(stderr, "Failed to write to file\n");
-            exit(EXIT_FAILURE);
+            char dataWrite[res->dataSize + 1];
+            memcpy(dataWrite, dataValStart,res->dataSize);
+            dataWrite[res->dataSize] = '\0';
+            size_t toCopy = res->dataSize + 1;
+            if(res->isInt)
+            {
+                toCopy--;
+            }
+        
+            numWrite = fwrite(dataWrite,1,toCopy,file);
+            if(numWrite == 0)
+            {
+                fprintf(stderr, "Failed to write to file\n");
+                exit(EXIT_FAILURE);
+            }
+            
         }
         newOffset = newOffset + numWrite;
         cursor = cursor->next;

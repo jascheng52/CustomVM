@@ -131,9 +131,13 @@ DATA_STRUCT *findData(NODE *head, char *dataStr, size_t length)
     NODE *currNode = head->next;
     char compareString[length + 1];
     memcpy(compareString + 1, dataStr, length);
-    compareString[0] = '.';
     while(currNode != head)
     {
+        if(currNode->type == BLOCK)
+            compareString[0] = '~';
+        else
+            compareString[0] = '.';
+
         DATA_STRUCT *dataStruct = (DATA_STRUCT *)currNode->data;
         if(length + 1 == dataStruct->dataNameSize)
         {

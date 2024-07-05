@@ -78,11 +78,11 @@ void run()
     //Setting pointer of sp to the top of stack
     //Grows down
     glob_reg[SP] = MAX_STACK_SIZE;
-
     char *start = PROCESS_STACK;
     size_t offset = *(size_t *)start;
     start = start + offset;
-    while(*(uint16_t *)start != 0xffff)
+    glob_reg[IP] = start - PROCESS_STACK;
+    while(*(uint16_t *)(glob_reg[IP] + PROCESS_STACK) != 0xffff)
     {
         start = INS_executeNext(start);
     }
